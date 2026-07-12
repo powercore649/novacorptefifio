@@ -1,112 +1,109 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { CATEGORIES } from '@/lib/categories';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { formatNumber } from '@/lib/utils';
 
-function useCountUp(target, durationMs = 1200) {
-  const [value, setValue] = useState(0);
-  const startRef = useRef(null);
-
-  useEffect(() => {
-    if (typeof target !== 'number') return;
-    startRef.current = null;
-    let raf;
-    const step = (ts) => {
-      if (startRef.current === null) startRef.current = ts;
-      const progress = Math.min((ts - startRef.current) / durationMs, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
-      setValue(Math.round(target * eased));
-      if (progress < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [target, durationMs]);
-
-  return value;
-}
-
-function StatCounter({ value, label, emoji }) {
-  const animated = useCountUp(value ?? 0);
-  return (
-    <div className="stat-chip">
-      <div className="stat-chip-num">{value == null ? '—' : formatNumber(animated)}</div>
-      <div className="stat-chip-label">{emoji} {label}</div>
-    </div>
-  );
-}
+// Hero de la page d'accueil — inspiré des landing pages de bots Discord
+// (pastille "vérifié", gros titre, CTA, bandeau de stats en direct) mais
+// entièrement alimenté par les vraies données du réseau via /api/stats.
+// Tout le style vit dans les classes hero-v2-* (voir app/globals.css),
+// scopées pour ne jamais affecter .hero utilisé ailleurs sur le site.
 
 export default function HomeHero() {
   const [stats, setStats] = useState(null);
-  const [topServers, setTopServers] = useState([]);
 
   useEffect(() => {
-    fetch('/api/stats').then((r) => r.json()).then(setStats).catch(() => {});
-    fetch('/api/servers', { cache: 'no-store' })
+    fetch('/api/stats')
       .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setTopServers([...data].sort((a, b) => b.bumpCount - a.bumpCount).slice(0, 3));
-        }
-      })
+      .then(setStats)
       .catch(() => {});
   }, []);
 
+  const STATS_ROW = [
+    { key: 'totalServers', label: 'Serveurs référencés' },
+    { key: 'totalMembers', label: 'Membres représentés' },
+    { key: 'totalBumps', label: 'Bumps effectués' },
+    { key: 'weeklyBumps', label: 'Bumps cette semaine' },
+  ];
+
   return (
-    <>
-      <header className="hero">
-        <h1>Trouvez votre prochain <span>serveur Discord</span>.</h1>
-        <p className="lead">
-          L'annuaire des serveurs propulsés par Bumpify — données réelles, mises à jour en direct
-          depuis le réseau de bump : membres, description, tags et nombre de bumps.
-        </p>
+    <div className="hero-v2">
+      <div className="hero-v2-grid">
+        <div>
+          <span className="hero-eyebrow">
+            <span style={{ color: 'var(--line)' }}>✓</span> Réseau Bumpify · données en direct
+          </span>
 
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
-          <a href="/annuaire" className="filter-chip active" style={{ padding: '10px 22px', fontSize: 14.5 }}>
-            🔍 Parcourir l'annuaire
-          </a>
-          <a href="/decouverte" className="filter-chip" style={{ padding: '10px 22px', fontSize: 14.5 }}>
-            🎲 Découverte aléatoire
-          </a>
-          <a href="/leaderboard" className="filter-chip" style={{ padding: '10px 22px', fontSize: 14.5 }}>
-            🏆 Classement
-          </a>
-          <a href="/stats" className="filter-chip" style={{ padding: '10px 22px', fontSize: 14.5 }}>
-            📊 Statistiques
-          </a>
-        </div>
-      </header>
+          <h1>
+            L'annuaire des serveurs Discord{' '}
+            <span className="accent-word">qui bougent vraiment</span>
+          </h1>
 
-      {/* Stats animées */}
-      {stats && (
-        <div className="stats-banner" style={{ marginBottom: 8 }}>
-          <StatCounter value={stats.totalServers} label="Serveurs" emoji="🌐" />
-          <StatCounter value={stats.totalMembers} label="Membres" emoji="👥" />
-          <StatCounter value={stats.totalBumps} label="Bumps au total" emoji="🚀" />
-          <StatCounter value={stats.weeklyBumps} label="Bumps cette semaine" emoji="📅" />
-        </div>
-      )}
+          <p className="lead">
+            Parcourez, comparez et rejoignez des serveurs Discord actifs — classés par
+            bumps, membres et activité réelle, mis à jour toutes les 15 secondes.
+          </p>
 
-      {/* Catégories rapides */}
-      <div style={{ maxWidth: 1280, margin: '40px auto 0', padding: '0 6vw', position: 'relative', zIndex: 1 }}>
-        <div style={{ fontSize: 13, color: 'var(--text-faint)', marginBottom: 10, textAlign: 'center' }}>
-          Parcourir par catégorie
+          <div className="hero-v2-actions">
+            <Link href="/annuaire" className="hero-cta-primary">
+              🧭 Explorer l'annuaire
+            </Link>
+            <div className="hero-links-secondary">
+              <Link href="/leaderboard" className="hero-link-secondary">🏆 Classement</Link>
+              <Link href="/stats" className="hero-link-secondary">📊 Statistiques</Link>
+              <Link href="/templates" className="hero-link-secondary">📄 Templates</Link>
+            </div>
+          </div>
+
+          <div className="stat-strip">
+            {STATS_ROW.map((s) => (
+              <div className="stat-strip-item" key={s.key}>
+                <div className="stat-strip-num">
+                  {stats ? formatNumber(stats[s.key] ?? 0) : '—'}
+                </div>
+                <div className="stat-strip-label">{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="filters-bar" style={{ margin: 0 }}>
-          {CATEGORIES.slice(0, 10).map((c) => (
-            <a key={c} href={`/annuaire?tag=${encodeURIComponent(c)}`} className="filter-chip">{c}</a>
-          ))}
-        </div>
+
+        <svg className="hero-network" viewBox="0 0 440 380" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="var(--border)" strokeWidth="1.5" fill="none">
+            <path d="M220 190 L90 100" />
+            <path d="M220 190 L350 90" />
+            <path d="M220 190 L70 280" />
+            <path d="M220 190 L360 290" />
+            <path d="M220 190 L220 40" />
+            <path d="M90 100 L220 40" />
+            <path d="M350 90 L220 40" />
+            <path d="M70 280 L360 290" />
+          </g>
+
+          {/* Nœud central — représente le réseau lui-même */}
+          <circle cx="220" cy="190" r="15" fill="var(--accent)" />
+
+          {/* Nœuds satellites */}
+          <circle cx="90" cy="100" r="9" fill="var(--surface-3)" stroke="var(--border)" strokeWidth="1.5" />
+          <circle cx="350" cy="90" r="9" fill="var(--surface-3)" stroke="var(--border)" strokeWidth="1.5" />
+          <circle cx="70" cy="280" r="9" fill="var(--surface-3)" stroke="var(--border)" strokeWidth="1.5" />
+          <circle cx="360" cy="290" r="9" fill="var(--surface-3)" stroke="var(--border)" strokeWidth="1.5" />
+          <circle cx="220" cy="40" r="9" fill="var(--surface-3)" stroke="var(--border)" strokeWidth="1.5" />
+
+          {/* Deux nœuds "actifs" qui pulsent, pour symboliser un bump en cours */}
+          <circle cx="350" cy="90" r="6" fill="var(--line)" />
+          <circle className="node-pulse-ring" cx="350" cy="90" r="6" fill="none" stroke="var(--line)" strokeWidth="2" />
+
+          <circle cx="70" cy="280" r="6" fill="var(--line)" />
+          <circle className="node-pulse-ring delay" cx="70" cy="280" r="6" fill="none" stroke="var(--line)" strokeWidth="2" />
+        </svg>
       </div>
 
-      {/* Top 3 serveurs en vedette */}
-      {topServers.length > 0 && (
-        <div style={{ maxWidth: 1280, margin: '40px auto 0', padding: '0 6vw', position: 'relative', zIndex: 1 }}>
-          <div style={{ fontSize: 13, color: 'var(--text-faint)', marginBottom: 14, textAlign: 'center' }}>
-            🔥 En ce moment sur le réseau
-          </div>
+      {stats?.topByBumps?.length > 0 && (
+        <>
+          <div className="section-label">🔥 En ce moment sur le réseau</div>
           <div className="directory-grid" style={{ padding: 0 }}>
-            {topServers.map((s) => (
-              <a
+            {stats.topByBumps.map((s) => (
+              <Link
                 key={s.guildId}
                 href={`/server/${s.guildId}`}
                 className="server-card"
@@ -120,22 +117,16 @@ export default function HomeHero() {
                   </div>
                   <div>
                     <div className="server-name">{s.name}</div>
-                    <div className="server-meta">{s.memberCount ?? '—'} membres</div>
                   </div>
                 </div>
                 <div className="server-footer">
-                  <span className="bump-badge"><span className="live-dot" /> {s.bumpCount} bumps</span>
+                  <span className="bump-badge"><span className="live-dot" /> {formatNumber(s.bumpCount)} bumps</span>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
-          <div style={{ textAlign: 'center', marginTop: 24 }}>
-            <a href="/annuaire" className="filter-chip" style={{ padding: '8px 18px', fontSize: 13.5 }}>
-              Voir tout l'annuaire →
-            </a>
-          </div>
-        </div>
+        </>
       )}
-    </>
+    </div>
   );
 }
