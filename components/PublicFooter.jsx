@@ -4,11 +4,13 @@ const COLUMNS = [
   {
     title: 'Découvrir',
     links: [
-      { href: '/', label: 'Annuaire' },
+      { href: '/', label: 'Accueil' },
+      { href: '/annuaire', label: 'Annuaire' },
       { href: '/leaderboard', label: 'Classement' },
       { href: '/trending', label: 'Tendances' },
       { href: '/new', label: 'Nouveaux serveurs' },
       { href: '/decouverte', label: 'Découverte au hasard' },
+      { href: '/stats', label: 'Statistiques' },
     ],
   },
   {

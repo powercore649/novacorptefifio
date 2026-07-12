@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ServerModal from '@/components/ServerModal';
 import LoadingLogo from '@/components/LoadingLogo';
 import { favorites, searchHistory, stripMarkdown, compareList, MAX_COMPARE } from '@/lib/utils';
@@ -23,10 +24,13 @@ const PAGE_SIZE = 24; // 24 cartes par page (8 rangées de 3 sur grand écran)
 // `hideBanner` : masque la barre de recherche/tri (les pages Tendances et
 // Nouveaux ont déjà leur propre tri côté serveur).
 export default function DirectoryClient({ initialServers = null, hideBanner = false }) {
+  const searchParams = useSearchParams();
   const [servers, setServers] = useState(initialServers);
   const [error, setError] = useState(null);
   const [query, setQuery] = useState('');
-  const [tag, setTag] = useState(null);
+  // Pré-sélectionné depuis l'URL (ex: /annuaire?tag=Gaming), utilisé par les
+  // liens catégories de la page d'accueil.
+  const [tag, setTag] = useState(() => searchParams?.get('tag') || null);
   const [sort, setSort] = useState('bumps');
   const [hideNsfw, setHideNsfw] = useState(true);
   const [favOnly, setFavOnly] = useState(false);

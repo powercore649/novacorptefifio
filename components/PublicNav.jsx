@@ -8,7 +8,8 @@ const NAV_GROUPS = [
     label: 'Découvrir',
     icon: '🧭',
     items: [
-      { href: '/', label: 'Annuaire' },
+      { href: '/', label: 'Accueil' },
+      { href: '/annuaire', label: 'Annuaire' },
       { href: '/leaderboard', label: 'Classement' },
       { href: '/trending', label: 'Tendances' },
       { href: '/new', label: 'Nouveaux' },

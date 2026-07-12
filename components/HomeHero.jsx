@@ -51,11 +51,6 @@ export default function HomeHero() {
       .catch(() => {});
   }, []);
 
-  const scrollToDirectory = (e) => {
-    e.preventDefault();
-    document.getElementById('annuaire')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
   return (
     <>
       <header className="hero">
@@ -66,7 +61,7 @@ export default function HomeHero() {
         </p>
 
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
-          <a href="#annuaire" onClick={scrollToDirectory} className="filter-chip active" style={{ padding: '10px 22px', fontSize: 14.5 }}>
+          <a href="/annuaire" className="filter-chip active" style={{ padding: '10px 22px', fontSize: 14.5 }}>
             🔍 Parcourir l'annuaire
           </a>
           <a href="/decouverte" className="filter-chip" style={{ padding: '10px 22px', fontSize: 14.5 }}>
@@ -74,6 +69,9 @@ export default function HomeHero() {
           </a>
           <a href="/leaderboard" className="filter-chip" style={{ padding: '10px 22px', fontSize: 14.5 }}>
             🏆 Classement
+          </a>
+          <a href="/stats" className="filter-chip" style={{ padding: '10px 22px', fontSize: 14.5 }}>
+            📊 Statistiques
           </a>
         </div>
       </header>
@@ -95,7 +93,7 @@ export default function HomeHero() {
         </div>
         <div className="filters-bar" style={{ margin: 0 }}>
           {CATEGORIES.slice(0, 10).map((c) => (
-            <a key={c} href="#annuaire" onClick={scrollToDirectory} className="filter-chip">{c}</a>
+            <a key={c} href={`/annuaire?tag=${encodeURIComponent(c)}`} className="filter-chip">{c}</a>
           ))}
         </div>
       </div>
@@ -130,6 +128,11 @@ export default function HomeHero() {
                 </div>
               </a>
             ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 24 }}>
+            <a href="/annuaire" className="filter-chip" style={{ padding: '8px 18px', fontSize: 13.5 }}>
+              Voir tout l'annuaire →
+            </a>
           </div>
         </div>
       )}

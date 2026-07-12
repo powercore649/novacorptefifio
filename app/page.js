@@ -1,4 +1,3 @@
-import DirectoryClient from '@/components/DirectoryClient';
 import PublicNav from '@/components/PublicNav';
 import PublicFooter from '@/components/PublicFooter';
 import HomeHero from '@/components/HomeHero';
@@ -22,10 +21,6 @@ export default function DirectoryHome() {
       <PublicNav current="/" />
 
       <HomeHero />
-
-      <div id="annuaire" style={{ paddingTop: 24 }}>
-        <DirectoryClient />
-      </div>
 
       <PublicFooter />
     </div>
