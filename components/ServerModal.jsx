@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import ServerDescription from '@/components/ServerDescription';
 
 function timeAgo(dateStr) {
@@ -14,7 +15,25 @@ function timeAgo(dateStr) {
 }
 
 export default function ServerModal({ server, onClose }) {
+  const [copied, setCopied] = useState(false);
+  const [badgeCopied, setBadgeCopied] = useState(false);
+
   if (!server) return null;
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/server/${server.guildId}`;
+    await navigator.clipboard.writeText(url).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyBadge = async () => {
+    const origin = window.location.origin;
+    const badgeMarkdown = `[![Bumpify](${origin}/api/badge/${server.guildId})](${origin}/server/${server.guildId})`;
+    await navigator.clipboard.writeText(badgeMarkdown).catch(() => {});
+    setBadgeCopied(true);
+    setTimeout(() => setBadgeCopied(false), 2000);
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -48,6 +67,15 @@ export default function ServerModal({ server, onClose }) {
           <div className="modal-stat"><div className="modal-stat-num">{server.bumpStreak}</div><div className="modal-stat-label">Streak (jours)</div></div>
           <div className="modal-stat"><div className="modal-stat-num">{server.totalVotes}</div><div className="modal-stat-label">Votes reçus</div></div>
           <div className="modal-stat"><div className="modal-stat-num mono" style={{ fontSize: 15 }}>{timeAgo(server.lastBump)}</div><div className="modal-stat-label">Dernier bump</div></div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+          <button className={`share-btn ${copied ? 'copied' : ''}`} onClick={handleShare}>
+            {copied ? '✅ Lien copié !' : '🔗 Partager'}
+          </button>
+          <button className={`share-btn ${badgeCopied ? 'copied' : ''}`} onClick={handleCopyBadge}>
+            {badgeCopied ? '✅ Badge copié !' : '🏷️ Copier le badge'}
+          </button>
         </div>
 
         <div className="modal-footer">
