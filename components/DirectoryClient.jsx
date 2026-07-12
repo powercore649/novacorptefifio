@@ -227,7 +227,18 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
               <div>
                 <div className="server-name">{s.name}</div>
                 <div className="server-meta">{s.memberCount ?? '—'} membres · {s.presenceCount ?? '—'} en ligne</div>
-                <RatingBadge averageRating={s.averageRating} reviewCount={s.reviewCount} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <RatingBadge averageRating={s.averageRating} reviewCount={s.reviewCount} />
+                  <img
+                    src={`/api/badge/${s.guildId}`}
+                    alt={`Badge Bumpify de ${s.name}`}
+                    height={20}
+                    style={{ display: 'block' }}
+                    loading="lazy"
+                    onClick={(e) => e.stopPropagation()}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                </div>
               </div>
               <button
                 className={`filter-chip ${compareIds.includes(s.guildId) ? 'active' : ''}`}
