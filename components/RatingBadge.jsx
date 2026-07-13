@@ -4,7 +4,7 @@ export default function RatingBadge({ averageRating, reviewCount, size = 12 }) {
   if (!averageRating || !reviewCount) return null;
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: size, color: 'var(--text-dim)' }}>
-      <span style={{ color: '#fbbf24' }}>★</span>
+      <span style={{ color: 'var(--accent-2)' }}>★</span>
       {averageRating}
       <span style={{ color: 'var(--text-faint)' }}>({reviewCount})</span>
     </span>

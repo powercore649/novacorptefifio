@@ -61,7 +61,7 @@ export async function GET(request, { params }) {
     value = `${server.bumpCount ?? 0} bumps`;
   }
 
-  const svg = renderBadgeSvg(label, value, server ? '#7c6cf0' : '#9a9a9a');
+  const svg = renderBadgeSvg(label, value, server ? '#ff2bd6' : '#9a9a9a');
 
   return new Response(svg, {
     headers: {

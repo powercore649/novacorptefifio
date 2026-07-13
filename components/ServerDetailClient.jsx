@@ -293,7 +293,7 @@ export default function ServerDetailClient({ server }) {
                     <button
                       key={n}
                       onClick={() => setMyRating(n)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, padding: 0, color: n <= myRating ? '#fbbf24' : 'var(--border)' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, padding: 0, color: n <= myRating ? 'var(--accent-2)' : 'var(--border)' }}
                       aria-label={`${n} étoile${n > 1 ? 's' : ''}`}
                     >
                       ★
@@ -328,7 +328,7 @@ export default function ServerDetailClient({ server }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <span style={{ fontWeight: 600, fontSize: 13 }}>{r.username || 'Utilisateur'}</span>
-                      <span style={{ color: '#fbbf24', fontSize: 12 }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
+                      <span style={{ color: 'var(--accent-2)', fontSize: 12 }}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</span>
                       <span style={{ fontSize: 11, color: 'var(--text-faint)' }}>
                         {new Date(r.createdAt).toLocaleDateString('fr-FR')}
                       </span>

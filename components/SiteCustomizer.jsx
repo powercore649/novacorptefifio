@@ -2,11 +2,11 @@
 import { useEffect, useState } from 'react';
 
 const ACCENTS = [
-  { name: 'Violet', accent: '#7c6cf0', line: '#34e5c6' },
-  { name: 'Émeraude', accent: '#22c58b', line: '#7c6cf0' },
-  { name: 'Corail', accent: '#ef6a5f', line: '#f2c14e' },
-  { name: 'Or', accent: '#e8b93b', line: '#7c6cf0' },
-  { name: 'Rose', accent: '#e857a6', line: '#34e5c6' },
+  { name: 'Magenta', accent: '#ff2bd6', line: '#00fff2' },
+  { name: 'Cyan électrique', accent: '#00fff2', line: '#ff2bd6' },
+  { name: 'Violet néon', accent: '#b026ff', line: '#00fff2' },
+  { name: 'Vert néon', accent: '#39ff14', line: '#ff2bd6' },
+  { name: 'Orange plasma', accent: '#ff9d00', line: '#00fff2' },
 ];
 
 const STORAGE_KEY = 'bumpify-directory-theme-v1';
@@ -16,8 +16,8 @@ function applyTheme(theme) {
   root.style.setProperty('--accent', theme.accent);
   root.style.setProperty('--accent-soft', theme.accent + '26');
   root.style.setProperty('--line', theme.line);
-  root.style.setProperty('--radius', theme.compact ? '9px' : '14px');
-  root.style.setProperty('--radius-sm', theme.compact ? '6px' : '9px');
+  root.style.setProperty('--radius', theme.compact ? '6px' : '10px');
+  root.style.setProperty('--radius-sm', theme.compact ? '4px' : '6px');
   root.classList.toggle('density-compact', !!theme.compact);
 }
 
