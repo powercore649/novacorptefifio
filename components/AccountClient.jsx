@@ -14,6 +14,15 @@ export default function AccountClient() {
   const [showAllGuilds, setShowAllGuilds] = useState(false);
   const [openMembersFor, setOpenMembersFor] = useState(null);
   const [membersCache, setMembersCache] = useState({}); // guildId -> { loading, error, members }
+  const [section, setSection] = useState('profil'); // 'profil' | 'serveurs' | 'discord'
+  const [idCopied, setIdCopied] = useState(false);
+
+  const copyId = async () => {
+    if (!session?.user?.discordId) return;
+    await navigator.clipboard.writeText(session.user.discordId).catch(() => {});
+    setIdCopied(true);
+    setTimeout(() => setIdCopied(false), 2000);
+  };
 
   const toggleMembers = async (guildId) => {
     if (openMembersFor === guildId) { setOpenMembersFor(null); return; }
@@ -98,8 +107,8 @@ export default function AccountClient() {
   }
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 6vw 8vh', position: 'relative', zIndex: 1 }}>
-      {/* En-tête profil */}
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 6vw 8vh', position: 'relative', zIndex: 1 }}>
+      {/* En-tête profil — bannière + avatar, façon carte de profil Discord */}
       <div
         style={{
           marginBottom: 28, borderRadius: 'var(--radius)', overflow: 'hidden',
@@ -119,7 +128,8 @@ export default function AccountClient() {
             <img
               src={session.user.image}
               alt=""
-              style={{ width: 72, height: 72, borderRadius: '50%', border: '4px solid var(--surface)', flexShrink: 0 }}
+              className="account-avatar-ring"
+              style={{ width: 72, height: 72, borderRadius: '50%', flexShrink: 0 }}
             />
           )}
           <div style={{ flex: 1, minWidth: 180, paddingTop: 8 }}>
@@ -128,9 +138,17 @@ export default function AccountClient() {
               <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 2 }}>{session.user.email}</div>
             )}
             {session.user?.discordId && (
-              <div className="mono" style={{ fontSize: 11.5, color: 'var(--text-faint)', marginTop: 2 }}>
-                ID Discord : {session.user.discordId}
-              </div>
+              <button
+                className="mono"
+                onClick={copyId}
+                style={{
+                  fontSize: 11.5, color: 'var(--text-faint)', marginTop: 2, background: 'none', border: 'none',
+                  cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 6,
+                }}
+                title="Copier l'ID"
+              >
+                ID Discord : {session.user.discordId} {idCopied ? '✅' : '📋'}
+              </button>
             )}
             <div className="mono" style={{ fontSize: 12, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
               <span className="live-dot" />
@@ -153,194 +171,241 @@ export default function AccountClient() {
 
       {!error && account === null && <LoadingLogo label="Chargement de tes statistiques…" />}
 
-      {!error && account !== null && account.guilds.length === 0 && (
-        <div className="empty-state">
-          <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-          Aucune activité détectée sur un serveur du réseau Bumpify pour l'instant.
-          <br />Bump un serveur ou discute un peu pour voir apparaître tes stats ici.
-        </div>
-      )}
+      {/* Mise en page façon "Paramètres Discord" : sidebar de navigation + panneau de contenu */}
+      {!error && account !== null && (
+        <div className="account-layout">
+          <nav className="account-sidebar">
+            <div className="account-sidebar-label">Mon compte</div>
+            <button className={`account-sidebar-item ${section === 'profil' ? 'active' : ''}`} onClick={() => setSection('profil')}>
+              👤 Profil
+            </button>
+            <button className={`account-sidebar-item ${section === 'serveurs' ? 'active' : ''}`} onClick={() => setSection('serveurs')}>
+              🚀 Mes serveurs Bumpify
+            </button>
+            <button className={`account-sidebar-item ${section === 'discord' ? 'active' : ''}`} onClick={() => setSection('discord')}>
+              💬 Serveurs Discord
+            </button>
+            <div className="account-sidebar-label">Données</div>
+            <button className="account-sidebar-item" onClick={exportData} disabled={!account}>
+              ⬇️ Exporter mes données
+            </button>
+          </nav>
 
-      {/* Résumé global */}
-      {totals && (
-        <div style={{ marginBottom: 32 }}>
-          <div className="stats-banner" style={{ marginBottom: 14, padding: 0, maxWidth: 'none' }}>
-            <div className="stat-chip">
-              <div className="stat-chip-num">{formatNumber(totals.bumps)}</div>
-              <div className="stat-chip-label">🚀 Bumps au total</div>
-            </div>
-            <div className="stat-chip">
-              <div className="stat-chip-num">{formatNumber(totals.coins)}</div>
-              <div className="stat-chip-label">🪙 Coins au total</div>
-            </div>
-            <div className="stat-chip">
-              <div className="stat-chip-num">{formatNumber(totals.totalXp)}</div>
-              <div className="stat-chip-label">⚡ XP cumulée</div>
-            </div>
-            <div className="stat-chip">
-              <div className="stat-chip-num">{totals.bestStreak}</div>
-              <div className="stat-chip-label">🔥 Meilleur streak</div>
-            </div>
-            <div className="stat-chip">
-              <div className="stat-chip-num">{totals.badges}</div>
-              <div className="stat-chip-label">🏅 Badges obtenus</div>
-            </div>
-          </div>
-          <button className="filter-chip" style={{ fontSize: 12.5 }} onClick={exportData}>
-            ⬇️ Exporter mes données (JSON)
-          </button>
-        </div>
-      )}
-
-      {/* Détail par serveur */}
-      {!error && sortedGuilds.length > 0 && (
-        <div className="directory-grid">
-          {sortedGuilds.map((g) => (
-            <div className="server-card" key={g.guildId} style={{ cursor: 'default' }}>
-              <div className="server-card-head">
-                <div className="server-avatar">
-                  {g.guildIcon
-                    ? <img src={`https://cdn.discordapp.com/icons/${g.guildId}/${g.guildIcon}.png`} alt="" />
-                    : g.guildName.slice(0, 2).toUpperCase()}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div className="server-name">{g.guildName}</div>
-                  <div className="server-meta">{formatNumber(g.totalXp)} XP</div>
-                </div>
-                <span
-                  className="filter-chip active"
-                  style={{ cursor: 'default', flexShrink: 0, padding: '4px 12px' }}
-                  title="Niveau"
-                >
-                  Niv. {g.level}
-                </span>
+          <div className="account-content">
+            {account.guilds.length === 0 && section === 'serveurs' && (
+              <div className="empty-state">
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+                Aucune activité détectée sur un serveur du réseau Bumpify pour l'instant.
+                <br />Bump un serveur ou discute un peu pour voir apparaître tes stats ici.
               </div>
+            )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginTop: 4 }}>
-                <div className="stat-chip">
-                  <div className="stat-chip-num">{formatNumber(g.bumps)}</div>
-                  <div className="stat-chip-label">🚀 Bumps {g.rank ? `· #${g.rank}` : ''}</div>
+            {section === 'profil' && (
+              <div>
+                <div className="account-info-row">
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Nom d'utilisateur Discord</div>
+                    <div className="account-info-row-value">{session.user?.name}</div>
+                  </div>
                 </div>
-                <div className="stat-chip">
-                  <div className="stat-chip-num">{g.streak}</div>
-                  <div className="stat-chip-label">🔥 Streak</div>
+                {session.user?.email && (
+                  <div className="account-info-row">
+                    <div style={{ flex: 1 }}>
+                      <div className="account-info-row-label">Email</div>
+                      <div className="account-info-row-value">{session.user.email}</div>
+                    </div>
+                  </div>
+                )}
+                <div className="account-info-row">
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">ID Discord</div>
+                    <div className="account-info-row-value mono">{session.user?.discordId}</div>
+                  </div>
+                  <button className="filter-chip" onClick={copyId}>{idCopied ? '✅ Copié' : '📋 Copier'}</button>
                 </div>
-                <div className="stat-chip">
-                  <div className="stat-chip-num">{formatNumber(g.coins)}</div>
-                  <div className="stat-chip-label">🪙 Coins</div>
-                </div>
-                <div className="stat-chip">
-                  <div className="stat-chip-num">{formatNumber(g.reputation)}</div>
-                  <div className="stat-chip-label">⭐ Réputation</div>
-                </div>
+
+                {totals && (
+                  <>
+                    <div style={{ marginTop: 26, marginBottom: 14, fontSize: 13, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                      Statistiques cumulées sur le réseau
+                    </div>
+                    <div className="stats-banner" style={{ padding: 0, maxWidth: 'none' }}>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{formatNumber(totals.bumps)}</div>
+                        <div className="stat-chip-label">🚀 Bumps au total</div>
+                      </div>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{formatNumber(totals.coins)}</div>
+                        <div className="stat-chip-label">🪙 Coins au total</div>
+                      </div>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{formatNumber(totals.totalXp)}</div>
+                        <div className="stat-chip-label">⚡ XP cumulée</div>
+                      </div>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{totals.bestStreak}</div>
+                        <div className="stat-chip-label">🔥 Meilleur streak</div>
+                      </div>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{totals.badges}</div>
+                        <div className="stat-chip-label">🏅 Badges obtenus</div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
+            )}
 
-              {g.lastBump && (
-                <div style={{ fontSize: 11.5, color: 'var(--text-faint)', marginTop: 8 }}>
-                  Dernier bump : {new Date(g.lastBump).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                </div>
-              )}
+            {section === 'serveurs' && sortedGuilds.length > 0 && (
+              <div className="directory-grid" style={{ padding: 0 }}>
+                {sortedGuilds.map((g) => (
+                  <div className="server-card" key={g.guildId} style={{ cursor: 'default' }}>
+                    <div className="server-card-head">
+                      <div className="server-avatar">
+                        {g.guildIcon
+                          ? <img src={`https://cdn.discordapp.com/icons/${g.guildId}/${g.guildIcon}.png`} alt="" />
+                          : g.guildName.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div className="server-name">{g.guildName}</div>
+                        <div className="server-meta">{formatNumber(g.totalXp)} XP</div>
+                      </div>
+                      <span
+                        className="filter-chip active"
+                        style={{ cursor: 'default', flexShrink: 0, padding: '4px 12px' }}
+                        title="Niveau"
+                      >
+                        Niv. {g.level}
+                      </span>
+                    </div>
 
-              {g.badges?.length > 0 && (
-                <div className="server-tags" style={{ marginTop: 10 }}>
-                  {g.badges.map((b) => (
-                    <span
-                      key={b.name}
-                      className="tag-pill"
-                      style={{ borderColor: b.color, color: b.color }}
-                      title={b.name}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginTop: 4 }}>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{formatNumber(g.bumps)}</div>
+                        <div className="stat-chip-label">🚀 Bumps {g.rank ? `· #${g.rank}` : ''}</div>
+                      </div>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{g.streak}</div>
+                        <div className="stat-chip-label">🔥 Streak</div>
+                      </div>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{formatNumber(g.coins)}</div>
+                        <div className="stat-chip-label">🪙 Coins</div>
+                      </div>
+                      <div className="stat-chip">
+                        <div className="stat-chip-num">{formatNumber(g.reputation)}</div>
+                        <div className="stat-chip-label">⭐ Réputation</div>
+                      </div>
+                    </div>
+
+                    {g.lastBump && (
+                      <div style={{ fontSize: 11.5, color: 'var(--text-faint)', marginTop: 8 }}>
+                        Dernier bump : {new Date(g.lastBump).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    )}
+
+                    {g.badges?.length > 0 && (
+                      <div className="server-tags" style={{ marginTop: 10 }}>
+                        {g.badges.map((b) => (
+                          <span
+                            key={b.name}
+                            className="tag-pill"
+                            style={{ borderColor: b.color, color: b.color }}
+                            title={b.name}
+                          >
+                            {b.emoji} {b.name}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="server-footer">
+                      <span className="mono" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
+                        {g.weeklyBumps} bump{g.weeklyBumps !== 1 ? 's' : ''} cette semaine
+                      </span>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="filter-chip" style={{ fontSize: 12 }} onClick={() => toggleMembers(g.guildId)}>
+                          {openMembersFor === g.guildId ? 'Masquer les membres' : '👥 Voir les membres'}
+                        </button>
+                        <a className="join-btn" href={`/server/${g.guildId}`}>Voir le serveur →</a>
+                      </div>
+                    </div>
+
+                    {openMembersFor === g.guildId && (
+                      <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+                        {membersCache[g.guildId]?.loading && (
+                          <div style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>Chargement des membres…</div>
+                        )}
+                        {membersCache[g.guildId]?.error === 'missing_intent' && (
+                          <div style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
+                            La liste des membres n'est pas disponible pour ce serveur (intent Discord requis non activé côté bot).
+                          </div>
+                        )}
+                        {membersCache[g.guildId]?.error && membersCache[g.guildId]?.error !== 'missing_intent' && (
+                          <div style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
+                            Impossible de charger les membres pour le moment.
+                          </div>
+                        )}
+                        {membersCache[g.guildId]?.members?.length > 0 && (
+                          <div style={{ maxHeight: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            <div style={{ fontSize: 11.5, color: 'var(--text-faint)', marginBottom: 4 }}>
+                              {membersCache[g.guildId].members.length} membre{membersCache[g.guildId].members.length !== 1 ? 's' : ''}
+                            </div>
+                            {membersCache[g.guildId].members.map((m) => (
+                              <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div className="server-avatar" style={{ width: 26, height: 26, fontSize: 10, flexShrink: 0 }}>
+                                  {m.avatar ? <img src={m.avatar} alt="" /> : (m.globalName || m.username).slice(0, 2).toUpperCase()}
+                                </div>
+                                <span style={{ fontSize: 13 }}>{m.nickname || m.globalName || m.username}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {section === 'discord' && account?.discordGuilds?.length > 0 && (
+              <div>
+                <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                  Tes serveurs Discord ({account.discordGuilds.length})
+                </h2>
+                <div className="directory-list" style={{ padding: 0, maxWidth: 'none', margin: 0 }}>
+                  {(showAllGuilds ? account.discordGuilds : account.discordGuilds.slice(0, DISCORD_GUILDS_PREVIEW_COUNT)).map((g) => (
+                    <div className="server-row" style={{ cursor: g.onBumpify ? 'pointer' : 'default' }} key={g.guildId}
+                      onClick={() => { if (g.onBumpify) window.location.href = `/server/${g.guildId}`; }}
                     >
-                      {b.emoji} {b.name}
-                    </span>
+                      <div className="server-avatar" style={{ width: 36, height: 36, fontSize: 13, flexShrink: 0 }}>
+                        {g.icon ? <img src={g.icon} alt="" /> : g.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="server-row-info">
+                        <div className="server-row-name">{g.name}</div>
+                        {g.owner && <div className="server-row-desc">Tu es propriétaire de ce serveur</div>}
+                      </div>
+                      <span
+                        className={`filter-chip ${g.onBumpify ? 'active' : ''}`}
+                        style={{ cursor: 'default', flexShrink: 0, fontSize: 11.5, padding: '4px 10px' }}
+                      >
+                        {g.onBumpify ? '✅ Sur Bumpify' : 'Pas encore sur Bumpify'}
+                      </span>
+                    </div>
                   ))}
                 </div>
-              )}
-
-              <div className="server-footer">
-                <span className="mono" style={{ fontSize: 11, color: 'var(--text-faint)' }}>
-                  {g.weeklyBumps} bump{g.weeklyBumps !== 1 ? 's' : ''} cette semaine
-                </span>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="filter-chip" style={{ fontSize: 12 }} onClick={() => toggleMembers(g.guildId)}>
-                    {openMembersFor === g.guildId ? 'Masquer les membres' : '👥 Voir les membres'}
+                {account.discordGuilds.length > DISCORD_GUILDS_PREVIEW_COUNT && (
+                  <button
+                    className="filter-chip"
+                    style={{ marginTop: 14 }}
+                    onClick={() => setShowAllGuilds((v) => !v)}
+                  >
+                    {showAllGuilds ? 'Réduire' : `Voir les ${account.discordGuilds.length - DISCORD_GUILDS_PREVIEW_COUNT} autres serveurs`}
                   </button>
-                  <a className="join-btn" href={`/server/${g.guildId}`}>Voir le serveur →</a>
-                </div>
+                )}
               </div>
-
-              {openMembersFor === g.guildId && (
-                <div style={{ marginTop: 12, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
-                  {membersCache[g.guildId]?.loading && (
-                    <div style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>Chargement des membres…</div>
-                  )}
-                  {membersCache[g.guildId]?.error === 'missing_intent' && (
-                    <div style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
-                      La liste des membres n'est pas disponible pour ce serveur (intent Discord requis non activé côté bot).
-                    </div>
-                  )}
-                  {membersCache[g.guildId]?.error && membersCache[g.guildId]?.error !== 'missing_intent' && (
-                    <div style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
-                      Impossible de charger les membres pour le moment.
-                    </div>
-                  )}
-                  {membersCache[g.guildId]?.members?.length > 0 && (
-                    <div style={{ maxHeight: 260, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontSize: 11.5, color: 'var(--text-faint)', marginBottom: 4 }}>
-                        {membersCache[g.guildId].members.length} membre{membersCache[g.guildId].members.length !== 1 ? 's' : ''}
-                      </div>
-                      {membersCache[g.guildId].members.map((m) => (
-                        <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div className="server-avatar" style={{ width: 26, height: 26, fontSize: 10, flexShrink: 0 }}>
-                            {m.avatar ? <img src={m.avatar} alt="" /> : (m.globalName || m.username).slice(0, 2).toUpperCase()}
-                          </div>
-                          <span style={{ fontSize: 13 }}>{m.nickname || m.globalName || m.username}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Tous les serveurs Discord de l'utilisateur, avec indicateur Bumpify */}
-      {!error && account?.discordGuilds?.length > 0 && (
-        <div style={{ marginTop: 40 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 14 }}>
-            Tes serveurs Discord ({account.discordGuilds.length})
-          </h2>
-          <div className="directory-list" style={{ padding: 0, maxWidth: 'none', margin: 0 }}>
-            {(showAllGuilds ? account.discordGuilds : account.discordGuilds.slice(0, DISCORD_GUILDS_PREVIEW_COUNT)).map((g) => (
-              <div className="server-row" style={{ cursor: g.onBumpify ? 'pointer' : 'default' }} key={g.guildId}
-                onClick={() => { if (g.onBumpify) window.location.href = `/server/${g.guildId}`; }}
-              >
-                <div className="server-avatar" style={{ width: 36, height: 36, fontSize: 13, flexShrink: 0 }}>
-                  {g.icon ? <img src={g.icon} alt="" /> : g.name.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="server-row-info">
-                  <div className="server-row-name">{g.name}</div>
-                  {g.owner && <div className="server-row-desc">Tu es propriétaire de ce serveur</div>}
-                </div>
-                <span
-                  className={`filter-chip ${g.onBumpify ? 'active' : ''}`}
-                  style={{ cursor: 'default', flexShrink: 0, fontSize: 11.5, padding: '4px 10px' }}
-                >
-                  {g.onBumpify ? '✅ Sur Bumpify' : 'Pas encore sur Bumpify'}
-                </span>
-              </div>
-            ))}
+            )}
           </div>
-          {account.discordGuilds.length > DISCORD_GUILDS_PREVIEW_COUNT && (
-            <button
-              className="filter-chip"
-              style={{ marginTop: 14 }}
-              onClick={() => setShowAllGuilds((v) => !v)}
-            >
-              {showAllGuilds ? 'Réduire' : `Voir les ${account.discordGuilds.length - DISCORD_GUILDS_PREVIEW_COUNT} autres serveurs`}
-            </button>
-          )}
         </div>
       )}
     </div>

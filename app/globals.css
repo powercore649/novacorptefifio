@@ -612,3 +612,40 @@ a { color: inherit; text-decoration: none; }
 .onboarding-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--surface-3); transition: background 0.15s ease; }
 .onboarding-dot.active { background: var(--accent); box-shadow: var(--glow-accent); }
 .onboarding-actions { display: flex; align-items: center; gap: 10px; }
+
+/* Page /account — mise en page façon "Paramètres Discord" (sidebar + panneau) */
+.account-layout { display: flex; gap: 32px; align-items: flex-start; }
+.account-sidebar {
+  width: 220px; flex-shrink: 0; position: sticky; top: 90px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.account-sidebar-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--text-faint); padding: 6px 12px; margin-top: 10px;
+}
+.account-sidebar-item {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm);
+  font-size: 14px; color: var(--text-dim); cursor: pointer; text-align: left; background: none; border: none;
+  transition: background 0.12s ease, color 0.12s ease; width: 100%;
+}
+.account-sidebar-item:hover { background: var(--surface-2); color: var(--text); }
+.account-sidebar-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.account-content { flex: 1; min-width: 0; }
+
+.account-info-row {
+  display: flex; align-items: center; gap: 14px; padding: 14px 18px;
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+.account-info-row-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-faint); margin-bottom: 3px; }
+.account-info-row-value { font-size: 14.5px; color: var(--text); word-break: break-word; }
+
+.account-avatar-ring {
+  border: 4px solid var(--surface); box-shadow: var(--glow-accent);
+}
+
+@media (max-width: 860px) {
+  .account-layout { flex-direction: column; }
+  .account-sidebar { position: static; width: 100%; flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  .account-sidebar-label { display: none; }
+}
