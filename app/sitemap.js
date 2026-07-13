@@ -7,7 +7,7 @@ export const revalidate = 3600;
 const SITE_URL = 'https://zyntra.dpdns.org';
 
 export default async function sitemap() {
-  const staticRoutes = ['', '/annuaire', '/recherche-avancee', '/leaderboard', '/trending', '/new', '/decouverte', '/stats', '/status', '/documentation', '/templates', '/faq', '/cgu', '/reglement', '/a-propos', '/changelog', '/partenaires'].map((path) => ({
+  const staticRoutes = ['', '/annuaire', '/recherche-avancee', '/activite', '/leaderboard', '/trending', '/new', '/decouverte', '/stats', '/status', '/documentation', '/templates', '/faq', '/cgu', '/reglement', '/a-propos', '/changelog', '/partenaires'].map((path) => ({
     url: `${SITE_URL}${path}`,
     lastModified: new Date(),
     changeFrequency: 'hourly',

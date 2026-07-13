@@ -11,6 +11,7 @@ const NAV_GROUPS = [
       { href: '/', label: 'Accueil' },
       { href: '/annuaire', label: 'Annuaire' },
       { href: '/recherche-avancee', label: 'Recherche avancée' },
+      { href: '/activite', label: 'Activité en direct' },
       { href: '/collections', label: 'Mes collections' },
       { href: '/leaderboard', label: 'Classement' },
       { href: '/trending', label: 'Tendances' },
