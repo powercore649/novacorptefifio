@@ -3,11 +3,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ServerModal from '@/components/ServerModal';
 import LoadingLogo from '@/components/LoadingLogo';
-import { favorites, searchHistory, stripMarkdown, compareList, MAX_COMPARE } from '@/lib/utils';
+import { favorites, searchHistory, stripMarkdown, compareList, MAX_COMPARE, serverSize, SIZE_LABELS, viewPref } from '@/lib/utils';
 import { CATEGORIES } from '@/lib/categories';
 import ReportModal from '@/components/ReportModal';
 import RatingBadge from '@/components/RatingBadge';
 import CompareModal from '@/components/CompareModal';
+import CollectionPicker from '@/components/CollectionPicker';
 
 const SORTS = {
   bumps: (a, b) => b.bumpCount - a.bumpCount,
@@ -38,10 +39,14 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState([]);
   const [reportGuildId, setReportGuildId] = useState(null);
+  const [collectionGuildId, setCollectionGuildId] = useState(null);
   const [selectedId, setSelectedId] = useState(null);
   const [compareIds, setCompareIds] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
   const [page, setPage] = useState(1);
+  const [view, setView] = useState('grid'); // 'grid' | 'list'
+  const [sizeFilter, setSizeFilter] = useState(''); // '' | 'small' | 'medium' | 'large'
+  const [langFilter, setLangFilter] = useState('');
   const gridRef = useRef(null);
   const isFirstRender = useRef(true);
   const selectedServer = useMemo(
@@ -57,6 +62,7 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
     setFavIds(favorites.get());
     setHistory(searchHistory.get());
     setCompareIds(compareList.get());
+    setView(viewPref.get());
   }, []);
 
   const toggleFavorite = (e, guildId) => {
@@ -107,12 +113,25 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
     return [...CATEGORIES, ...extras];
   }, [servers]);
 
+  const changeView = (v) => {
+    setView(v);
+    viewPref.set(v);
+  };
+
+  const availableLangs = useMemo(() => {
+    const set = new Set();
+    (servers || []).forEach((s) => { if (s.language) set.add(s.language); });
+    return Array.from(set).sort();
+  }, [servers]);
+
   const filtered = useMemo(() => {
     if (!servers) return [];
     let list = servers;
     if (hideNsfw) list = list.filter((s) => !s.nsfw);
     if (favOnly) list = list.filter((s) => favIds.includes(s.guildId));
     if (tag) list = list.filter((s) => (s.tags || []).includes(tag));
+    if (sizeFilter) list = list.filter((s) => serverSize(s.memberCount) === sizeFilter);
+    if (langFilter) list = list.filter((s) => s.language === langFilter);
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       list = list.filter(
@@ -120,13 +139,13 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
       );
     }
     return [...list].sort(SORTS[sort]);
-  }, [servers, query, tag, sort, hideNsfw, favOnly, favIds]);
+  }, [servers, query, tag, sort, hideNsfw, favOnly, favIds, sizeFilter, langFilter]);
 
   // Retour à la page 1 dès que la recherche/les filtres/le tri changent, sinon
   // on pourrait se retrouver sur une page vide après un nouveau filtrage.
   useEffect(() => {
     setPage(1);
-  }, [query, tag, sort, hideNsfw, favOnly]);
+  }, [query, tag, sort, hideNsfw, favOnly, sizeFilter, langFilter]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
@@ -199,6 +218,39 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
         </div>
       )}
 
+      {!hideBanner && (
+        <div className="advanced-filters">
+          <select className="filter-select" value={sizeFilter} onChange={(e) => setSizeFilter(e.target.value)}>
+            <option value="">Toutes tailles</option>
+            {Object.entries(SIZE_LABELS).filter(([k]) => k !== 'unknown').map(([k, label]) => (
+              <option key={k} value={k}>{label} membres</option>
+            ))}
+          </select>
+          {availableLangs.length > 0 && (
+            <select className="filter-select" value={langFilter} onChange={(e) => setLangFilter(e.target.value)}>
+              <option value="">Toutes langues</option>
+              {availableLangs.map((l) => <option key={l} value={l}>{l}</option>)}
+            </select>
+          )}
+          <div className="view-toggle" style={{ marginLeft: 'auto' }}>
+            <button
+              className={`view-btn ${view === 'grid' ? 'active' : ''}`}
+              title="Vue grille"
+              onClick={() => changeView('grid')}
+            >
+              ▦
+            </button>
+            <button
+              className={`view-btn ${view === 'list' ? 'active' : ''}`}
+              title="Vue liste"
+              onClick={() => changeView('list')}
+            >
+              ☰
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="filters-bar">
         <button className={`filter-chip ${!tag && !favOnly ? 'active' : ''}`} onClick={() => { setTag(null); setFavOnly(false); }}>Tous</button>
         {allTags.map((t) => (
@@ -212,7 +264,7 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
         </button>
       </div>
 
-      <div className="directory-grid" ref={gridRef}>
+      <div className={view === 'grid' ? 'directory-grid' : 'directory-list'} ref={gridRef}>
         {error && <div className="empty-state">Impossible de charger l'annuaire pour le moment.</div>}
         {!error && servers === null && <LoadingLogo label="Chargement des serveurs…" />}
         {!error && servers !== null && filtered.length === 0 && (
@@ -220,7 +272,61 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
             {favOnly ? "Tu n'as encore aucun serveur en favoris." : 'Aucun serveur ne correspond à votre recherche.'}
           </div>
         )}
-        {pageItems.map((s) => (
+
+        {view === 'list' && pageItems.map((s, i) => (
+          <div className="server-row" key={s.guildId} onClick={() => setSelectedId(s.guildId)}>
+            <div className="server-row-rank">{(page - 1) * PAGE_SIZE + i + 1}</div>
+            <div className="server-avatar" style={{ width: 36, height: 36, borderRadius: 8, flexShrink: 0 }}>
+              {s.icon
+                ? <img src={`https://cdn.discordapp.com/icons/${s.guildId}/${s.icon}.png`} alt="" />
+                : s.name.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="server-row-info">
+              <div className="server-row-name">{s.name}</div>
+              {s.description && <div className="server-row-desc">{stripMarkdown(s.description)}</div>}
+            </div>
+            <div className="server-row-stats">
+              <div className="server-row-stat">
+                <div className="server-row-stat-num">{s.memberCount ?? '—'}</div>
+                <div className="server-row-stat-label">membres</div>
+              </div>
+              <div className="server-row-stat">
+                <div className="server-row-stat-num">{s.bumpCount ?? 0}</div>
+                <div className="server-row-stat-label">bumps</div>
+              </div>
+            </div>
+            <button
+              className={`filter-chip ${favIds.includes(s.guildId) ? 'active' : ''}`}
+              style={{ padding: '4px 10px', flexShrink: 0 }}
+              title={favIds.includes(s.guildId) ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              onClick={(e) => toggleFavorite(e, s.guildId)}
+            >
+              {favIds.includes(s.guildId) ? '★' : '☆'}
+            </button>
+            <button
+              className="filter-chip"
+              style={{ padding: '4px 10px', flexShrink: 0 }}
+              title="Ajouter à une collection"
+              onClick={(e) => { e.stopPropagation(); setCollectionGuildId(s.guildId); }}
+            >
+              📁
+            </button>
+            {s.inviteLink && (
+              <a
+                className="join-btn"
+                href={s.inviteLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                style={{ flexShrink: 0 }}
+              >
+                Rejoindre
+              </a>
+            )}
+          </div>
+        ))}
+
+        {view === 'grid' && pageItems.map((s) => (
           <div className="server-card" key={s.guildId} onClick={() => setSelectedId(s.guildId)}>
             <div className="server-card-head">
               <div className="server-avatar">
@@ -265,6 +371,14 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
                 onClick={(e) => toggleFavorite(e, s.guildId)}
               >
                 {favIds.includes(s.guildId) ? '★' : '☆'}
+              </button>
+              <button
+                className="filter-chip"
+                style={{ padding: '4px 10px' }}
+                title="Ajouter à une collection"
+                onClick={(e) => { e.stopPropagation(); setCollectionGuildId(s.guildId); }}
+              >
+                📁
               </button>
             </div>
             {s.description && <p className="server-desc">{stripMarkdown(s.description)}</p>}
@@ -322,6 +436,7 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
 
       <ServerModal server={selectedServer} onClose={() => setSelectedId(null)} />
       {reportGuildId && <ReportModal guildId={reportGuildId} onClose={() => setReportGuildId(null)} />}
+      {collectionGuildId && <CollectionPicker guildId={collectionGuildId} onClose={() => setCollectionGuildId(null)} />}
 
       {compareIds.length > 0 && !showCompare && (
         <div className="compare-tray">

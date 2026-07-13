@@ -10,6 +10,7 @@ const NAV_GROUPS = [
     items: [
       { href: '/', label: 'Accueil' },
       { href: '/annuaire', label: 'Annuaire' },
+      { href: '/collections', label: 'Mes collections' },
       { href: '/leaderboard', label: 'Classement' },
       { href: '/trending', label: 'Tendances' },
       { href: '/new', label: 'Nouveaux' },
@@ -26,6 +27,7 @@ const NAV_GROUPS = [
       { href: '/partenaires', label: 'Partenaires' },
       { href: '/faq', label: 'FAQ' },
       { href: '/changelog', label: 'Changelog' },
+      { href: '/status', label: 'Statut des services' },
       { href: '/a-propos', label: 'À propos' },
     ],
   },
@@ -114,7 +116,7 @@ export default function PublicNav({ current = '/' }) {
     <nav className="nav-public">
       <a className="brand" href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
         <span className="brand-mark">B</span> Bumpify Directory
-        <span className="version-badge">Public Release</span>
+        <span className="version-badge">Bêta 2.1</span>
       </a>
 
       <div className="nav-links-desktop" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>

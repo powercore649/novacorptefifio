@@ -6,6 +6,7 @@ const COLUMNS = [
     links: [
       { href: '/', label: 'Accueil' },
       { href: '/annuaire', label: 'Annuaire' },
+      { href: '/collections', label: 'Mes collections' },
       { href: '/leaderboard', label: 'Classement' },
       { href: '/trending', label: 'Tendances' },
       { href: '/new', label: 'Nouveaux serveurs' },
@@ -20,6 +21,7 @@ const COLUMNS = [
       { href: '/partenaires', label: 'Partenaires' },
       { href: '/faq', label: 'FAQ' },
       { href: '/changelog', label: 'Changelog' },
+      { href: '/status', label: 'Statut des services' },
       { href: '/stats', label: 'Statistiques' },
     ],
   },
