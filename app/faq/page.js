@@ -38,6 +38,14 @@ const FAQ_ITEMS = [
     q: "Le site affiche une erreur ou des données qui semblent fausses, à qui le dire ?",
     a: 'Passe par notre serveur de support Discord — c\'est le moyen le plus rapide d\'obtenir de l\'aide.',
   },
+  {
+    q: 'Comment comparer plusieurs serveurs entre eux ?',
+    a: 'Clique sur le bouton ⇄ présent sur chaque carte de l\'annuaire pour ajouter un serveur au comparateur (jusqu\'à 3 à la fois). Une barre apparaît en bas de l\'écran pour ouvrir le tableau comparatif : membres, bumps, streak, votes, note moyenne, et plus encore.',
+  },
+  {
+    q: 'Comment savoir si le site ou le bot rencontre un problème ?',
+    a: 'La page "Statut des services" vérifie en direct l\'état du bridge Bumpify et de l\'API Discord officielle, avec la latence mesurée en temps réel. C\'est le premier endroit à consulter en cas de doute.',
+  },
 ];
 
 function FaqItem({ q, a }) {
@@ -59,20 +67,20 @@ export default function FaqPage() {
       <div className="hex-field" />
       <PublicNav current="/faq" />
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '4vh 6vw 2vh', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: '4vh 6vw 2vh', position: 'relative', zIndex: 1 }}>
         <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 6 }}>❓ Questions fréquentes</h1>
         <p style={{ color: 'var(--text-dim)', fontSize: 14 }}>
           Tout ce qu'il faut savoir sur l'annuaire, le classement, et ton compte.
         </p>
       </div>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 6vw 6vh', position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: '0 6vw 6vh', position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {FAQ_ITEMS.map((item) => (
           <FaqItem key={item.q} q={item.q} a={item.a} />
         ))}
       </div>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 6vw 8vh', position: 'relative', zIndex: 1, textAlign: 'center' }}>
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: '0 6vw 8vh', position: 'relative', zIndex: 1, textAlign: 'center' }}>
         <p style={{ color: 'var(--text-dim)', fontSize: 13.5, marginBottom: 14 }}>Une autre question ?</p>
         <a
           href={SUPPORT_DISCORD}

@@ -5,6 +5,25 @@ export const metadata = { title: 'Changelog — Bumpify Directory' };
 
 const ENTRIES = [
   {
+    version: 'Bêta 2.5',
+    items: [
+      'Nouveau thème visuel néon/cyberpunk sur l\'ensemble du site',
+      'Flux d\'activité en direct : bumps et croissances de membres en temps réel',
+      'Centre de documentation avec API publique et exemples basés sur de vraies données',
+      'Page de statut des services, avec vérification en direct du bridge et de l\'API Discord',
+    ],
+  },
+  {
+    version: 'Bêta 2.4',
+    items: [
+      'Comparateur de serveurs côte à côte (jusqu\'à 3 à la fois)',
+      'Pagination de l\'annuaire',
+      'Recherche avancée : catégories multiples, plage de membres/bumps, recherches sauvegardées et liens partageables',
+      'Partage rapide et badge embarquable directement depuis l\'aperçu d\'un serveur',
+      'Refonte de la page d\'accueil, alimentée par les statistiques en direct du réseau',
+    ],
+  },
+  {
     version: 'Bêta 2.3',
     items: [
       'Navigation regroupée en menus déroulants (Découvrir / Ressources)',
@@ -52,7 +71,7 @@ export default function ChangelogPage() {
       <div className="hex-field" />
       <PublicNav current="/changelog" />
 
-      <div style={{ maxWidth: 780, margin: '0 auto', padding: '4vh 6vw 8vh', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: '4vh 6vw 8vh', position: 'relative', zIndex: 1 }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>📜 Changelog</h1>
         <p style={{ color: 'var(--text-dim)', fontSize: 14, marginBottom: 32 }}>
           Tout ce qui a changé sur Bumpify Directory, dans l'ordre.

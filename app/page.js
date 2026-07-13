@@ -7,7 +7,7 @@ const jsonLd = {
   '@type': 'WebSite',
   name: 'Bumpify Directory',
   url: 'https://zyntra.dpdns.org',
-  description: "L'annuaire des serveurs Discord propulsés par Bumpify, avec de vraies données en direct.",
+  description: "Bumpify Directory est l'annuaire des serveurs Discord propulsés par Bumpify. Découvrez, comparez et rejoignez des communautés actives grâce à de vraies données en direct : membres, tags, bumps, classement et activité du réseau en temps réel.",
 };
 
 export default function DirectoryHome() {

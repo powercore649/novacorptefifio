@@ -9,7 +9,7 @@ export default function AProposPage() {
       <div className="hex-field" />
       <PublicNav current="/a-propos" />
 
-      <div style={{ maxWidth: 780, margin: '0 auto', padding: '4vh 6vw 8vh', position: 'relative', zIndex: 1, lineHeight: 1.7, fontSize: 14.5, color: 'var(--text-dim)' }}>
+      <div style={{ maxWidth: 820, margin: '0 auto', padding: '4vh 6vw 8vh', position: 'relative', zIndex: 1, lineHeight: 1.7, fontSize: 14.5, color: 'var(--text-dim)' }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>À propos de Bumpify Directory</h1>
         <p style={{ fontSize: 13, color: 'var(--text-faint)', marginBottom: 32 }}>Le projet, en quelques mots.</p>
 

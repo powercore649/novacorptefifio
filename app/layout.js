@@ -15,7 +15,7 @@ export const metadata = {
     default: 'Bumpify Directory — Trouvez votre prochain serveur Discord',
     template: '%s',
   },
-  description: "L'annuaire des serveurs Discord propulsés par Bumpify, avec de vraies données en direct : membres, description, tags et nombre de bumps.",
+  description: "L'annuaire des serveurs Discord propulsés par Bumpify : découvrez, comparez et rejoignez des communautés actives grâce à de vraies données en direct — membres, tags et nombre de bumps.",
   keywords: ['discord', 'serveur discord', 'annuaire discord', 'bump discord', 'bumpify'],
   openGraph: {
     type: 'website',
@@ -23,12 +23,12 @@ export const metadata = {
     url: SITE_URL,
     siteName: 'Bumpify Directory',
     title: 'Bumpify Directory — Trouvez votre prochain serveur Discord',
-    description: "L'annuaire des serveurs Discord propulsés par Bumpify, avec de vraies données en direct.",
+    description: "Bumpify Directory est l'annuaire des serveurs Discord propulsés par Bumpify. Découvrez, comparez et rejoignez des communautés actives grâce à de vraies données en direct : membres, tags, bumps, classement et activité du réseau en temps réel.",
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Bumpify Directory — Trouvez votre prochain serveur Discord',
-    description: "L'annuaire des serveurs Discord propulsés par Bumpify, avec de vraies données en direct.",
+    description: "Bumpify Directory est l'annuaire des serveurs Discord propulsés par Bumpify. Découvrez, comparez et rejoignez des communautés actives grâce à de vraies données en direct : membres, tags, bumps, classement et activité du réseau en temps réel.",
   },
   robots: { index: true, follow: true },
 };
