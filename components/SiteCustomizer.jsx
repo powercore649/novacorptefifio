@@ -82,6 +82,14 @@ export default function SiteCustomizer() {
           </div>
 
           <button className="filter-chip" style={{ marginTop: 18, width: '100%' }} onClick={reset}>Réinitialiser</button>
+
+          <button
+            className="filter-chip"
+            style={{ marginTop: 8, width: '100%' }}
+            onClick={() => { setOpen(false); window.dispatchEvent(new Event('bumpify:show-onboarding')); }}
+          >
+            🎓 Revoir la visite guidée
+          </button>
         </div>
       )}
     </>
