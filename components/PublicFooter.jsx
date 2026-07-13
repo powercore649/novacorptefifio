@@ -20,6 +20,7 @@ const COLUMNS = [
       { href: '/templates', label: 'Templates de serveur' },
       { href: '/partenaires', label: 'Partenaires' },
       { href: '/faq', label: 'FAQ' },
+      { href: '/documentation', label: 'Documentation' },
       { href: '/changelog', label: 'Changelog' },
       { href: '/status', label: 'Statut des services' },
       { href: '/stats', label: 'Statistiques' },

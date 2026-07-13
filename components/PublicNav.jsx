@@ -26,6 +26,7 @@ const NAV_GROUPS = [
       { href: '/templates', label: 'Templates' },
       { href: '/partenaires', label: 'Partenaires' },
       { href: '/faq', label: 'FAQ' },
+      { href: '/documentation', label: 'Documentation' },
       { href: '/changelog', label: 'Changelog' },
       { href: '/status', label: 'Statut des services' },
       { href: '/a-propos', label: 'À propos' },
