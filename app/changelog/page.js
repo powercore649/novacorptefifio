@@ -5,6 +5,14 @@ export const metadata = { title: 'Changelog — Bumpify Directory' };
 
 const ENTRIES = [
   {
+    version: 'Bêta 2.7',
+    items: [
+      'Serveur du jour sur la page d\'accueil : une mise en avant différente chaque jour, visible par tous les visiteurs',
+      'Nouveaux paramètres : tri et vue par défaut de l\'annuaire, visibilité de la barre de profil',
+      'Nouvelle section "Données locales" pour gérer/effacer favoris, historique et recherches sauvegardées',
+    ],
+  },
+  {
     version: 'Bêta 2.6',
     items: [
       'Visite guidée (onboarding) au premier passage sur le site, rejouable à tout moment',

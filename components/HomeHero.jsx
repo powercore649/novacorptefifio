@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { formatNumber } from '@/lib/utils';
+import ServerOfDayCard from '@/components/ServerOfDayCard';
 
 // Hero de la page d'accueil — inspiré des landing pages de bots Discord
 // (pastille "vérifié", gros titre, CTA, bandeau de stats en direct) mais
@@ -97,6 +98,8 @@ export default function HomeHero() {
           <circle className="node-pulse-ring delay" cx="70" cy="280" r="6" fill="none" stroke="var(--line)" strokeWidth="2" />
         </svg>
       </div>
+
+      <ServerOfDayCard />
 
       {stats?.topByBumps?.length > 0 && (
         <>

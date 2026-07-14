@@ -73,7 +73,7 @@ export default function PublicFooter() {
 
       <div className="footer-pub-v2-bottom">
         <span>Bumpify Directory — alimenté par de vraies données du réseau Bumpify</span>
-        <span className="mono">Bêta 2.6</span>
+        <span className="mono">Bêta 2.7</span>
       </div>
     </footer>
   );

@@ -131,7 +131,7 @@ export default function PublicNav({ current = '/' }) {
     <nav className="nav-public">
       <a className="brand" href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
         <span className="brand-mark">B</span> Bumpify Directory
-        <span className="version-badge">Bêta 2.6</span>
+        <span className="version-badge">Bêta 2.7</span>
       </a>
 
       <div className="nav-links-desktop" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>
