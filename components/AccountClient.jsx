@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import LoadingLogo from '@/components/LoadingLogo';
-import { formatNumber, profileCustom, PROFILE_BANNER_COLORS } from '@/lib/utils';
+import { formatNumber, profileCustom, PROFILE_BANNER_COLORS, prefs } from '@/lib/utils';
 
 const DISCORD_GUILDS_PREVIEW_COUNT = 12;
 
@@ -18,6 +18,17 @@ export default function AccountClient() {
   const [idCopied, setIdCopied] = useState(false);
   const [customProfile, setCustomProfile] = useState({});
   const [form, setForm] = useState({ displayName: '', status: '', bio: '', pronouns: '', bannerColor: '' });
+  const [sitePrefs, setSitePrefs] = useState({ reduceMotion: false, defaultHideNsfw: true });
+
+  useEffect(() => {
+    setSitePrefs(prefs.get());
+  }, []);
+
+  const togglePref = (key) => {
+    const next = prefs.set({ [key]: !sitePrefs[key] });
+    setSitePrefs(next);
+    window.dispatchEvent(new Event('bumpify:prefs-updated'));
+  };
 
   useEffect(() => {
     const c = profileCustom.get();
@@ -34,12 +45,14 @@ export default function AccountClient() {
   const saveProfile = () => {
     const next = profileCustom.set(form);
     setCustomProfile(next);
+    window.dispatchEvent(new Event('bumpify:profile-updated'));
   };
 
   const resetProfile = () => {
     profileCustom.reset();
     setCustomProfile({});
     setForm({ displayName: '', status: '', bio: '', pronouns: '', bannerColor: '' });
+    window.dispatchEvent(new Event('bumpify:profile-updated'));
   };
 
   const copyId = async () => {
@@ -459,6 +472,10 @@ export default function AccountClient() {
                   modifient pas ton vrai profil Discord et ne sont visibles par personne d'autre.
                 </div>
 
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: 14 }}>
+                  Profil affiché sur le site
+                </div>
+
                 <label style={{ display: 'block', marginBottom: 16 }}>
                   <div className="account-info-row-label" style={{ marginBottom: 6 }}>Pseudo affiché sur le site</div>
                   <input
@@ -534,9 +551,37 @@ export default function AccountClient() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button className="join-btn" onClick={saveProfile}>💾 Enregistrer</button>
-                  <button className="filter-chip" onClick={resetProfile}>♻️ Réinitialiser</button>
+                <div style={{ marginTop: 30, marginBottom: 14, fontSize: 13, fontWeight: 700, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                  Préférences du site
+                </div>
+
+                <div className="account-info-row" style={{ cursor: 'pointer' }} onClick={() => togglePref('reduceMotion')}>
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Réduire les animations</div>
+                    <div className="account-info-row-value" style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
+                      Désactive les effets de glow et transitions (accessibilité)
+                    </div>
+                  </div>
+                  <span className={`filter-chip ${sitePrefs.reduceMotion ? 'active' : ''}`}>
+                    {sitePrefs.reduceMotion ? 'Activé' : 'Désactivé'}
+                  </span>
+                </div>
+
+                <div className="account-info-row" style={{ cursor: 'pointer' }} onClick={() => togglePref('defaultHideNsfw')}>
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Masquer le contenu NSFW par défaut</div>
+                    <div className="account-info-row-value" style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
+                      S'applique à chaque nouvelle visite de l'annuaire
+                    </div>
+                  </div>
+                  <span className={`filter-chip ${sitePrefs.defaultHideNsfw ? 'active' : ''}`}>
+                    {sitePrefs.defaultHideNsfw ? 'Activé' : 'Désactivé'}
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+                  <button className="join-btn" onClick={saveProfile}>💾 Enregistrer le profil</button>
+                  <button className="filter-chip" onClick={resetProfile}>♻️ Réinitialiser le profil</button>
                 </div>
               </div>
             )}

@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { profileCustom } from '@/lib/utils';
 
 const NAV_GROUPS = [
   {
@@ -46,6 +47,15 @@ function DiscordIcon() {
 
 function AuthButton({ compact = false }) {
   const { data: session, status } = useSession();
+  const [displayName, setDisplayName] = useState(null);
+
+  useEffect(() => {
+    const sync = () => setDisplayName(profileCustom.get().displayName || null);
+    sync();
+    window.addEventListener('bumpify:profile-updated', sync);
+    return () => window.removeEventListener('bumpify:profile-updated', sync);
+  }, []);
+
   if (status === 'loading') return null;
 
   if (session) {
@@ -55,7 +65,9 @@ function AuthButton({ compact = false }) {
           <img src={session.user.image} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />
         )}
         {!compact && (
-          <span className="mono" style={{ fontSize: 12.5, color: 'var(--text-dim)' }}>{session.user?.name}</span>
+          <span style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--text)' }}>
+            {displayName || session.user?.name}
+          </span>
         )}
         <button className="filter-chip" onClick={() => signOut()}>Déconnexion</button>
       </div>
@@ -119,7 +131,7 @@ export default function PublicNav({ current = '/' }) {
     <nav className="nav-public">
       <a className="brand" href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
         <span className="brand-mark">B</span> Bumpify Directory
-        <span className="version-badge">Bêta 2.5</span>
+        <span className="version-badge">Bêta 2.6</span>
       </a>
 
       <div className="nav-links-desktop" style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end' }}>

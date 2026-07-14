@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ServerModal from '@/components/ServerModal';
 import LoadingLogo from '@/components/LoadingLogo';
-import { favorites, searchHistory, stripMarkdown, compareList, MAX_COMPARE, serverSize, SIZE_LABELS, viewPref } from '@/lib/utils';
+import { favorites, searchHistory, stripMarkdown, compareList, MAX_COMPARE, serverSize, SIZE_LABELS, viewPref, prefs } from '@/lib/utils';
 import { CATEGORIES } from '@/lib/categories';
 import ReportModal from '@/components/ReportModal';
 import RatingBadge from '@/components/RatingBadge';
@@ -63,6 +63,7 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
     setHistory(searchHistory.get());
     setCompareIds(compareList.get());
     setView(viewPref.get());
+    setHideNsfw(prefs.get().defaultHideNsfw);
   }, []);
 
   const toggleFavorite = (e, guildId) => {

@@ -613,6 +613,13 @@ a { color: inherit; text-decoration: none; }
 .onboarding-dot.active { background: var(--accent); box-shadow: var(--glow-accent); }
 .onboarding-actions { display: flex; align-items: center; gap: 10px; }
 
+/* Préférence "Réduire les animations" — appliquée via une classe sur <html> */
+.reduce-motion, .reduce-motion * {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
 /* Page /account — mise en page façon "Paramètres Discord" (sidebar + panneau) */
 .account-layout { display: flex; gap: 32px; align-items: flex-start; }
 .account-sidebar {

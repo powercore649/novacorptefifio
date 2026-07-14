@@ -5,6 +5,16 @@ export const metadata = { title: 'Changelog — Bumpify Directory' };
 
 const ENTRIES = [
   {
+    version: 'Bêta 2.6',
+    items: [
+      'Visite guidée (onboarding) au premier passage sur le site, rejouable à tout moment',
+      'Page de compte entièrement repensée façon "Paramètres Discord" (sidebar + panneaux)',
+      'Personnalisation de profil : pseudo, statut, pronoms, bio et couleur de bannière (stockés localement)',
+      'Nouvelles préférences : réduction des animations (accessibilité) et masquage NSFW par défaut',
+      'Pseudo personnalisé désormais visible et bien mis en avant dans la barre de navigation',
+    ],
+  },
+  {
     version: 'Bêta 2.5',
     items: [
       'Nouveau thème visuel néon/cyberpunk sur l\'ensemble du site',
