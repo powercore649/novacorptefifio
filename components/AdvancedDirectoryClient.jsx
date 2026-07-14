@@ -6,6 +6,7 @@ import { CATEGORIES } from '@/lib/categories';
 import ServerModal from '@/components/ServerModal';
 import LoadingLogo from '@/components/LoadingLogo';
 import RatingBadge from '@/components/RatingBadge';
+import TagPill from '@/components/TagPill';
 
 // Recherche avancée : sélection de PLUSIEURS tags à la fois (logique ET —
 // un serveur doit avoir tous les tags cochés, contrairement à l'annuaire
@@ -255,7 +256,7 @@ export default function AdvancedDirectoryClient() {
             {s.tags?.length > 0 && (
               <div className="server-tags">
                 {s.tags.slice(0, 4).map((t) => (
-                  <span className={`tag-pill ${tags.includes(t) ? 'active' : ''}`} key={t}>{t}</span>
+                  <TagPill tag={t} active={tags.includes(t)} key={t} />
                 ))}
               </div>
             )}

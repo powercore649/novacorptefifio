@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import LoadingLogo from '@/components/LoadingLogo';
+import TagPill from '@/components/TagPill';
 
 export default function DiscoverClient() {
   const [servers, setServers] = useState(null);
@@ -65,7 +66,7 @@ export default function DiscoverClient() {
         {current.description && <p className="server-desc">{current.description}</p>}
         {current.tags?.length > 0 && (
           <div className="server-tags">
-            {current.tags.slice(0, 4).map((t) => <span className="tag-pill" key={t}>{t}</span>)}
+            {current.tags.slice(0, 4).map((t) => <TagPill tag={t} key={t} />)}
           </div>
         )}
         <div className="server-footer">

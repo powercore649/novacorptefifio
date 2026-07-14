@@ -2,9 +2,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ServerModal from '@/components/ServerModal';
+import TagPill from '@/components/TagPill';
 import LoadingLogo from '@/components/LoadingLogo';
 import { favorites, searchHistory, stripMarkdown, compareList, MAX_COMPARE, serverSize, SIZE_LABELS, viewPref, prefs } from '@/lib/utils';
-import { CATEGORIES } from '@/lib/categories';
+import { CATEGORIES, getTagStyle } from '@/lib/categories';
 import ReportModal from '@/components/ReportModal';
 import RatingBadge from '@/components/RatingBadge';
 import CompareModal from '@/components/CompareModal';
@@ -115,6 +116,12 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
     return [...CATEGORIES, ...extras];
   }, [servers]);
 
+  const tagSuggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    return allTags.filter((t) => t.toLowerCase().includes(q)).slice(0, 6);
+  }, [allTags, query]);
+
   const changeView = (v) => {
     setView(v);
     viewPref.set(v);
@@ -186,6 +193,33 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
               }
             }}
           />
+          {showHistory && query && tagSuggestions.length > 0 && (
+            <div
+              style={{
+                position: 'absolute', top: '100%', left: 0, marginTop: 6, zIndex: 5,
+                background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius-sm)',
+                padding: 8, display: 'flex', flexWrap: 'wrap', gap: 6, maxWidth: '100%',
+              }}
+            >
+              <span style={{ fontSize: 11, color: 'var(--text-faint)', alignSelf: 'center', marginRight: 2 }}>
+                Tags :
+              </span>
+              {tagSuggestions.map((t) => {
+                const { emoji, color } = getTagStyle(t);
+                return (
+                  <button
+                    key={t}
+                    className="filter-chip"
+                    style={{ padding: '3px 10px', fontSize: 12.5, borderColor: color, color }}
+                    onMouseDown={() => { setTag(t); setQuery(''); setShowHistory(false); }}
+                  >
+                    {emoji} {t}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {showHistory && !query && history.length > 0 && (
             <div
               style={{
@@ -386,7 +420,7 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
             {s.description && <p className="server-desc">{stripMarkdown(s.description)}</p>}
             {s.tags?.length > 0 && (
               <div className="server-tags">
-                {s.tags.slice(0, 4).map((t) => <span className="tag-pill" key={t}>{t}</span>)}
+                {s.tags.slice(0, 4).map((t) => <TagPill tag={t} key={t} />)}
               </div>
             )}
             <div className="server-footer">

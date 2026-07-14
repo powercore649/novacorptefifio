@@ -3,17 +3,36 @@ import { useEffect, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { formatNumber, timeAgo, votes as votesStore } from '@/lib/utils';
+import { formatNumber, timeAgo, votes as votesStore, favorites, compareList, MAX_COMPARE } from '@/lib/utils';
 import ReportModal from '@/components/ReportModal';
 import ServerDescription from '@/components/ServerDescription';
+import TagPill from '@/components/TagPill';
 
 export default function ServerDetailClient({ server }) {
   const { data: session, status } = useSession();
   const [voted,      setVoted]      = useState(() => votesStore.hasVoted(server.guildId));
   const [voteCount,  setVoteCount]  = useState(server.totalVotes || 0);
   const [copied,     setCopied]     = useState(false);
+  const [idCopied,   setIdCopied]   = useState(false);
   const [badgeCopied, setBadgeCopied] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [isFav, setIsFav] = useState(false);
+  const [inCompare, setInCompare] = useState(false);
+
+  useEffect(() => {
+    setIsFav(favorites.has(server.guildId));
+    setInCompare(compareList.has(server.guildId));
+  }, [server.guildId]);
+
+  const toggleFav = () => {
+    favorites.toggle(server.guildId);
+    setIsFav(favorites.has(server.guildId));
+  };
+
+  const toggleCompare = () => {
+    const result = compareList.toggle(server.guildId);
+    setInCompare(result.list.includes(server.guildId));
+  };
 
   // Avis
   const [reviews, setReviews] = useState(null);
@@ -79,6 +98,12 @@ export default function ServerDetailClient({ server }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const copyServerId = async () => {
+    await navigator.clipboard.writeText(server.guildId).catch(() => {});
+    setIdCopied(true);
+    setTimeout(() => setIdCopied(false), 2000);
+  };
+
   const badgeImgUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/api/badge/${server.guildId}`;
   const badgeMarkdown = `[![Bumpify](${badgeImgUrl})](${typeof window !== 'undefined' ? window.location.origin : ''}/server/${server.guildId})`;
 
@@ -116,7 +141,7 @@ export default function ServerDetailClient({ server }) {
     <main>
       {/* Breadcrumb */}
       <div style={{ maxWidth: 900, margin: '0 auto', padding: '24px 6vw 0', position: 'relative', zIndex: 1 }}>
-        <Link href="/" style={{ color: 'var(--text-faint)', fontSize: 13, textDecoration: 'none' }}>← Annuaire</Link>
+        <Link href="/annuaire" style={{ color: 'var(--text-faint)', fontSize: 13, textDecoration: 'none' }}>← Annuaire</Link>
       </div>
 
       {/* Hero */}
@@ -136,17 +161,18 @@ export default function ServerDetailClient({ server }) {
               {server.featured && <span className="featured-badge">⭐ Featured</span>}
               {server.trending && <span className="trending-badge">🔥 Trending</span>}
               {server.isNew    && <span className="new-badge">✨ Nouveau</span>}
+              {server.nsfw     && (
+                <span className="new-badge" style={{ background: 'var(--danger)', color: '#fff' }}>
+                  🔞 NSFW
+                </span>
+              )}
             </div>
             {server.description
               ? <div style={{ marginBottom: 16, maxWidth: 540 }}><ServerDescription text={server.description} /></div>
               : <p style={{ color: 'var(--text-dim)', fontSize: 14, marginBottom: 16 }}>Aucune description.</p>}
             {(server.tags || []).length > 0 && (
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
-                {server.tags.map(t => (
-                  <Link key={t} href={`/?tags=${t}`} style={{ fontSize: 12, padding: '3px 10px', borderRadius: 999, background: 'var(--surface-3)', color: 'var(--text-dim)', textDecoration: 'none' }}>
-                    {t}
-                  </Link>
-                ))}
+                {server.tags.map((t) => <TagPill tag={t} key={t} />)}
               </div>
             )}
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -158,6 +184,16 @@ export default function ServerDetailClient({ server }) {
               )}
               <button className={`vote-btn ${voted ? 'voted' : ''}`} onClick={handleVote} disabled={voted}>
                 👍 {voted ? 'Voté !' : 'Voter'} · {formatNumber(voteCount)}
+              </button>
+              <button className="share-btn" onClick={toggleFav} title={isFav ? 'Retirer des favoris' : 'Ajouter aux favoris'}>
+                {isFav ? '★ Favori' : '☆ Favori'}
+              </button>
+              <button
+                className={`share-btn ${inCompare ? 'copied' : ''}`}
+                onClick={toggleCompare}
+                title={inCompare ? 'Retirer du comparateur' : `Ajouter au comparateur (max ${MAX_COMPARE})`}
+              >
+                ⇄ {inCompare ? 'Ajouté' : 'Comparer'}
               </button>
               <button className={`share-btn ${copied ? 'copied' : ''}`} onClick={handleShare}>
                 {copied ? '✅ Lien copié !' : '🔗 Partager'}
@@ -187,6 +223,7 @@ export default function ServerDetailClient({ server }) {
         <div className="detail-stats-grid" style={{ marginBottom: 24 }}>
           {[
             { label: '👥 Membres',     value: formatNumber(server.memberCount) },
+            { label: '🟢 En ligne',    value: formatNumber(server.presenceCount) },
             { label: '🚀 Bumps totaux',value: formatNumber(server.bumpCount)   },
             { label: '📅 Cette semaine',value: formatNumber(server.weeklyBumps)},
             { label: '👍 Votes',       value: formatNumber(voteCount)           },
@@ -218,13 +255,20 @@ export default function ServerDetailClient({ server }) {
           )}
         </div>
 
-        {/* Langue */}
-        {server.language && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-dim)', fontSize: 13.5, marginBottom: 24 }}>
-            <span>🌍</span>
-            <span>Langue : <strong style={{ color: 'var(--text)' }}>{server.language.toUpperCase()}</strong></span>
-          </div>
-        )}
+        {/* Langue + ID */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', color: 'var(--text-dim)', fontSize: 13.5, marginBottom: 24 }}>
+          {server.language && (
+            <span>🌍 Langue : <strong style={{ color: 'var(--text)' }}>{server.language.toUpperCase()}</strong></span>
+          )}
+          <button
+            onClick={copyServerId}
+            className="mono"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', fontSize: 12, padding: 0, display: 'flex', alignItems: 'center', gap: 6 }}
+            title="Copier l'ID du serveur"
+          >
+            ID : {server.guildId} {idCopied ? '✅' : '📋'}
+          </button>
+        </div>
 
         {/* Badge embarquable */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 20 }}>
@@ -263,7 +307,7 @@ export default function ServerDetailClient({ server }) {
                     </div>
                   </div>
                   <div className="server-tags">
-                    {s.tags.slice(0, 3).map((t) => <span className="tag-pill" key={t}>{t}</span>)}
+                    {s.tags.slice(0, 3).map((t) => <TagPill tag={t} key={t} />)}
                   </div>
                 </a>
               ))}

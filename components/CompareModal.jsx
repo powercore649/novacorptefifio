@@ -1,5 +1,6 @@
 'use client';
 import { timeAgo, formatNumber } from '@/lib/utils';
+import TagPill from '@/components/TagPill';
 
 // Modale de comparaison côte à côte de 2 ou 3 serveurs sélectionnés depuis
 // l'annuaire (voir bouton ⇄ sur les cartes dans DirectoryClient). Purement
@@ -98,7 +99,7 @@ export default function CompareModal({ servers, onClose, onRemove }) {
                 {servers.map((s) => (
                   <td key={s.guildId}>
                     <div className="server-tags">
-                      {(s.tags || []).slice(0, 4).map((t) => <span className="tag-pill" key={t}>{t}</span>)}
+                      {(s.tags || []).slice(0, 4).map((t) => <TagPill tag={t} link={false} key={t} />)}
                     </div>
                   </td>
                 ))}

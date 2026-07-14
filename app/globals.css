@@ -193,7 +193,10 @@ a { color: inherit; text-decoration: none; }
 .server-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag-pill {
   font-size: 11.5px; padding: 4px 9px; border-radius: 999px; background: var(--surface-3); color: var(--text-dim);
+  display: inline-flex; align-items: center; gap: 4px; text-decoration: none; border: 1px solid transparent;
+  transition: transform 0.1s ease;
 }
+.tag-pill[href]:hover { transform: translateY(-1px); }
 .server-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
 .bump-badge {
   display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 12.5px;

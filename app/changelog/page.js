@@ -5,6 +5,25 @@ export const metadata = { title: 'Changelog — Bumpify Directory' };
 
 const ENTRIES = [
   {
+    version: 'Bêta 2.9',
+    items: [
+      'Fiches serveur enrichies : boutons Favori et Comparer directement disponibles',
+      'Nombre de membres en ligne affiché dans les statistiques',
+      'Badge NSFW visible pour plus de transparence',
+      'ID du serveur copiable en un clic',
+      'Correction d\'un lien "Annuaire" cassé sur les fiches serveur',
+    ],
+  },
+  {
+    version: 'Bêta 2.8',
+    items: [
+      'V2 des tags : couleur et icône distinctes par catégorie sur tout le site',
+      'Nouvelle page dédiée par tag (/tag/nom) listant tous les serveurs correspondants',
+      'Nouvelle page "Tags & catégories" (/tags) : nuage de tags, taille selon la popularité',
+      'Autocomplétion des tags dans la barre de recherche de l\'annuaire',
+    ],
+  },
+  {
     version: 'Bêta 2.7',
     items: [
       'Serveur du jour sur la page d\'accueil : une mise en avant différente chaque jour, visible par tous les visiteurs',

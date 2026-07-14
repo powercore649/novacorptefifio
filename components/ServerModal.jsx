@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import ServerDescription from '@/components/ServerDescription';
+import TagPill from '@/components/TagPill';
 
 function timeAgo(dateStr) {
   if (!dateStr) return 'jamais';
@@ -56,7 +57,7 @@ export default function ServerModal({ server, onClose }) {
 
         {server.tags?.length > 0 && (
           <div className="server-tags" style={{ marginBottom: 18 }}>
-            {server.tags.map((t) => <span className="tag-pill" key={t}>{t}</span>)}
+            {server.tags.map((t) => <TagPill tag={t} key={t} />)}
           </div>
         )}
 

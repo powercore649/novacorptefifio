@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { formatNumber, stripMarkdown } from '@/lib/utils';
+import TagPill from '@/components/TagPill';
 
 // Met en avant un serveur différent chaque jour (sélection déterministe et
 // stable 24h, voir /api/server-of-day + lib/utils::pickServerOfDay). Visible
@@ -40,7 +41,7 @@ export default function ServerOfDayCard() {
           )}
           {server.tags?.length > 0 && (
             <div className="server-tags" style={{ marginBottom: 4 }}>
-              {server.tags.slice(0, 4).map((t) => <span className="tag-pill" key={t}>{t}</span>)}
+              {server.tags.slice(0, 4).map((t) => <TagPill tag={t} key={t} />)}
             </div>
           )}
         </div>
