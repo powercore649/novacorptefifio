@@ -199,8 +199,10 @@ export default function AccountClient() {
               </button>
             )}
             <div className="mono" style={{ fontSize: 12, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 6, marginTop: 6 }}>
-              <span className="live-dot" />
-              {lastSync ? `Synchronisé à ${lastSync.toLocaleTimeString('fr-FR')}` : 'Synchronisation…'}
+              <span className={`live-dot ${error ? 'feed-dot-off' : ''}`} />
+              {error
+                ? 'Statistiques Bumpify indisponibles pour le moment'
+                : (lastSync ? `Synchronisé à ${lastSync.toLocaleTimeString('fr-FR')}` : 'Synchronisation…')}
             </div>
           </div>
           {totals && (
@@ -211,43 +213,48 @@ export default function AccountClient() {
         </div>
       </div>
 
-      {error && (
-        <div className="empty-state">
-          Impossible de charger tes données pour le moment. Nouvel essai automatique dans 15s.
-        </div>
-      )}
+      {/* Mise en page façon "Paramètres Discord" : sidebar de navigation + panneau de contenu.
+          Toujours affichée dès qu'on est connecté — indépendante du chargement/de la
+          disponibilité des statistiques Bumpify (bridge), qui ne concernent que
+          certaines sections (Mes serveurs, Serveurs Discord). */}
+      <div className="account-layout">
+        <nav className="account-sidebar">
+          <div className="account-sidebar-label">Mon compte</div>
+          <button className={`account-sidebar-item ${section === 'profil' ? 'active' : ''}`} onClick={() => setSection('profil')}>
+            👤 Profil
+          </button>
+          <button className={`account-sidebar-item ${section === 'serveurs' ? 'active' : ''}`} onClick={() => setSection('serveurs')}>
+            🚀 Mes serveurs Bumpify
+          </button>
+          <button className={`account-sidebar-item ${section === 'discord' ? 'active' : ''}`} onClick={() => setSection('discord')}>
+            💬 Serveurs Discord
+          </button>
+          <div className="account-sidebar-label">Personnalisation</div>
+          <button className={`account-sidebar-item ${section === 'personnaliser' ? 'active' : ''}`} onClick={() => setSection('personnaliser')}>
+            🎨 Personnaliser mon profil
+          </button>
+          <div className="account-sidebar-label">Données</div>
+          <button className="account-sidebar-item" onClick={exportData} disabled={!account}>
+            ⬇️ Exporter mes données
+          </button>
+        </nav>
 
-      {!error && account === null && <LoadingLogo label="Chargement de tes statistiques…" />}
+        <div className="account-content">
+          {(section === 'serveurs' || section === 'discord') && error && (
+            <div className="empty-state">
+              Impossible de charger tes statistiques Bumpify pour le moment. Nouvel essai automatique dans 15s.
+              <br />Le reste de ton profil reste disponible normalement pendant ce temps.
+            </div>
+          )}
 
-      {/* Mise en page façon "Paramètres Discord" : sidebar de navigation + panneau de contenu */}
-      {!error && account !== null && (
-        <div className="account-layout">
-          <nav className="account-sidebar">
-            <div className="account-sidebar-label">Mon compte</div>
-            <button className={`account-sidebar-item ${section === 'profil' ? 'active' : ''}`} onClick={() => setSection('profil')}>
-              👤 Profil
-            </button>
-            <button className={`account-sidebar-item ${section === 'serveurs' ? 'active' : ''}`} onClick={() => setSection('serveurs')}>
-              🚀 Mes serveurs Bumpify
-            </button>
-            <button className={`account-sidebar-item ${section === 'discord' ? 'active' : ''}`} onClick={() => setSection('discord')}>
-              💬 Serveurs Discord
-            </button>
-            <div className="account-sidebar-label">Personnalisation</div>
-            <button className={`account-sidebar-item ${section === 'personnaliser' ? 'active' : ''}`} onClick={() => setSection('personnaliser')}>
-              🎨 Personnaliser mon profil
-            </button>
-            <div className="account-sidebar-label">Données</div>
-            <button className="account-sidebar-item" onClick={exportData} disabled={!account}>
-              ⬇️ Exporter mes données
-            </button>
-          </nav>
+          {(section === 'serveurs' || section === 'discord') && !error && account === null && (
+            <LoadingLogo label="Chargement de tes statistiques…" />
+          )}
 
-          <div className="account-content">
-            {account.guilds.length === 0 && section === 'serveurs' && (
-              <div className="empty-state">
-                <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
-                Aucune activité détectée sur un serveur du réseau Bumpify pour l'instant.
+          {account?.guilds?.length === 0 && section === 'serveurs' && (
+            <div className="empty-state">
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+              Aucune activité détectée sur un serveur du réseau Bumpify pour l'instant.
                 <br />Bump un serveur ou discute un peu pour voir apparaître tes stats ici.
               </div>
             )}
@@ -587,7 +594,6 @@ export default function AccountClient() {
             )}
           </div>
         </div>
-      )}
     </div>
   );
 }
