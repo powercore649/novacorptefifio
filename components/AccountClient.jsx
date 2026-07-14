@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import LoadingLogo from '@/components/LoadingLogo';
-import { formatNumber } from '@/lib/utils';
+import { formatNumber, profileCustom, PROFILE_BANNER_COLORS } from '@/lib/utils';
 
 const DISCORD_GUILDS_PREVIEW_COUNT = 12;
 
@@ -14,8 +14,33 @@ export default function AccountClient() {
   const [showAllGuilds, setShowAllGuilds] = useState(false);
   const [openMembersFor, setOpenMembersFor] = useState(null);
   const [membersCache, setMembersCache] = useState({}); // guildId -> { loading, error, members }
-  const [section, setSection] = useState('profil'); // 'profil' | 'serveurs' | 'discord'
+  const [section, setSection] = useState('profil'); // 'profil' | 'serveurs' | 'discord' | 'personnaliser'
   const [idCopied, setIdCopied] = useState(false);
+  const [customProfile, setCustomProfile] = useState({});
+  const [form, setForm] = useState({ displayName: '', status: '', bio: '', pronouns: '', bannerColor: '' });
+
+  useEffect(() => {
+    const c = profileCustom.get();
+    setCustomProfile(c);
+    setForm({
+      displayName: c.displayName || '',
+      status: c.status || '',
+      bio: c.bio || '',
+      pronouns: c.pronouns || '',
+      bannerColor: c.bannerColor || '',
+    });
+  }, []);
+
+  const saveProfile = () => {
+    const next = profileCustom.set(form);
+    setCustomProfile(next);
+  };
+
+  const resetProfile = () => {
+    profileCustom.reset();
+    setCustomProfile({});
+    setForm({ displayName: '', status: '', bio: '', pronouns: '', bannerColor: '' });
+  };
 
   const copyId = async () => {
     if (!session?.user?.discordId) return;
@@ -118,9 +143,11 @@ export default function AccountClient() {
         <div
           style={{
             height: 120,
-            background: session.user?.bannerUrl
-              ? `url(${session.user.bannerUrl}) center/cover no-repeat`
-              : (session.user?.accentColor || 'var(--accent)'),
+            background: customProfile.bannerColor
+              ? customProfile.bannerColor
+              : (session.user?.bannerUrl
+                ? `url(${session.user.bannerUrl}) center/cover no-repeat`
+                : (session.user?.accentColor || 'var(--accent)')),
           }}
         />
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '0 24px 20px', marginTop: -32, flexWrap: 'wrap' }}>
@@ -133,7 +160,15 @@ export default function AccountClient() {
             />
           )}
           <div style={{ flex: 1, minWidth: 180, paddingTop: 8 }}>
-            <div style={{ fontWeight: 700, fontSize: 22 }}>{session.user?.name}</div>
+            <div style={{ fontWeight: 700, fontSize: 22, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              {customProfile.displayName || session.user?.name}
+              {customProfile.pronouns && (
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-faint)' }}>· {customProfile.pronouns}</span>
+              )}
+            </div>
+            {customProfile.status && (
+              <div style={{ fontSize: 13, color: 'var(--line)', marginTop: 2 }}>{customProfile.status}</div>
+            )}
             {session.user?.email && (
               <div style={{ fontSize: 13, color: 'var(--text-dim)', marginTop: 2 }}>{session.user.email}</div>
             )}
@@ -185,6 +220,10 @@ export default function AccountClient() {
             <button className={`account-sidebar-item ${section === 'discord' ? 'active' : ''}`} onClick={() => setSection('discord')}>
               💬 Serveurs Discord
             </button>
+            <div className="account-sidebar-label">Personnalisation</div>
+            <button className={`account-sidebar-item ${section === 'personnaliser' ? 'active' : ''}`} onClick={() => setSection('personnaliser')}>
+              🎨 Personnaliser mon profil
+            </button>
             <div className="account-sidebar-label">Données</div>
             <button className="account-sidebar-item" onClick={exportData} disabled={!account}>
               ⬇️ Exporter mes données
@@ -202,6 +241,14 @@ export default function AccountClient() {
 
             {section === 'profil' && (
               <div>
+                {customProfile.bio && (
+                  <div className="account-info-row">
+                    <div style={{ flex: 1 }}>
+                      <div className="account-info-row-label">À propos de moi</div>
+                      <div className="account-info-row-value" style={{ whiteSpace: 'pre-wrap' }}>{customProfile.bio}</div>
+                    </div>
+                  </div>
+                )}
                 <div className="account-info-row">
                   <div style={{ flex: 1 }}>
                     <div className="account-info-row-label">Nom d'utilisateur Discord</div>
@@ -403,6 +450,94 @@ export default function AccountClient() {
                     {showAllGuilds ? 'Réduire' : `Voir les ${account.discordGuilds.length - DISCORD_GUILDS_PREVIEW_COUNT} autres serveurs`}
                   </button>
                 )}
+              </div>
+            )}
+            {section === 'personnaliser' && (
+              <div>
+                <div className="empty-state" style={{ textAlign: 'left', marginBottom: 20, padding: '14px 18px' }}>
+                  ℹ️ Ces informations sont enregistrées uniquement sur cet appareil (ton navigateur). Elles ne
+                  modifient pas ton vrai profil Discord et ne sont visibles par personne d'autre.
+                </div>
+
+                <label style={{ display: 'block', marginBottom: 16 }}>
+                  <div className="account-info-row-label" style={{ marginBottom: 6 }}>Pseudo affiché sur le site</div>
+                  <input
+                    className="search-input"
+                    style={{ width: '100%' }}
+                    placeholder={session.user?.name}
+                    value={form.displayName}
+                    maxLength={32}
+                    onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
+                  />
+                </label>
+
+                <label style={{ display: 'block', marginBottom: 16 }}>
+                  <div className="account-info-row-label" style={{ marginBottom: 6 }}>Statut personnalisé</div>
+                  <input
+                    className="search-input"
+                    style={{ width: '100%' }}
+                    placeholder="Ex : 🚀 En train de bump mes serveurs préférés"
+                    value={form.status}
+                    maxLength={60}
+                    onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                  />
+                </label>
+
+                <label style={{ display: 'block', marginBottom: 16 }}>
+                  <div className="account-info-row-label" style={{ marginBottom: 6 }}>Pronoms</div>
+                  <input
+                    className="search-input"
+                    style={{ width: '100%', maxWidth: 240 }}
+                    placeholder="Ex : elle/il/iel"
+                    value={form.pronouns}
+                    maxLength={20}
+                    onChange={(e) => setForm((f) => ({ ...f, pronouns: e.target.value }))}
+                  />
+                </label>
+
+                <label style={{ display: 'block', marginBottom: 20 }}>
+                  <div className="account-info-row-label" style={{ marginBottom: 6 }}>
+                    À propos de moi ({form.bio.length}/190)
+                  </div>
+                  <textarea
+                    className="search-input"
+                    style={{ width: '100%', minHeight: 90, resize: 'vertical', fontFamily: 'inherit' }}
+                    placeholder="Quelques mots sur toi…"
+                    value={form.bio}
+                    maxLength={190}
+                    onChange={(e) => setForm((f) => ({ ...f, bio: e.target.value }))}
+                  />
+                </label>
+
+                <div style={{ marginBottom: 24 }}>
+                  <div className="account-info-row-label" style={{ marginBottom: 8 }}>Couleur de bannière</div>
+                  <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    {PROFILE_BANNER_COLORS.map((c) => (
+                      <button
+                        key={c.name}
+                        title={c.name}
+                        onClick={() => setForm((f) => ({ ...f, bannerColor: c.value }))}
+                        style={{
+                          width: 40, height: 40, borderRadius: '50%', background: c.value, cursor: 'pointer',
+                          border: form.bannerColor === c.value ? '3px solid var(--text)' : '3px solid transparent',
+                        }}
+                      />
+                    ))}
+                    <button
+                      title="Utiliser la bannière Discord d'origine"
+                      onClick={() => setForm((f) => ({ ...f, bannerColor: '' }))}
+                      className="filter-chip"
+                      style={{ borderRadius: '50%', width: 40, height: 40, padding: 0 }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button className="join-btn" onClick={saveProfile}>💾 Enregistrer</button>
+                  <button className="filter-chip" onClick={resetProfile}>♻️ Réinitialiser</button>
+                </div>
               </div>
             )}
           </div>
