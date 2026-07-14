@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { profileCustom } from '@/lib/utils';
+import { profileCustom, prefs } from '@/lib/utils';
 
 // Petite barre de profil persistante, visible en bas à gauche sur tout le
 // site dès qu'on est connecté — inspirée du bandeau utilisateur en bas de
@@ -10,15 +10,20 @@ import { profileCustom } from '@/lib/utils';
 export default function ProfileBar() {
   const { data: session, status } = useSession();
   const [custom, setCustom] = useState({});
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const sync = () => setCustom(profileCustom.get());
+    const sync = () => { setCustom(profileCustom.get()); setVisible(prefs.get().showProfileBar); };
     sync();
     window.addEventListener('bumpify:profile-updated', sync);
-    return () => window.removeEventListener('bumpify:profile-updated', sync);
+    window.addEventListener('bumpify:prefs-updated', sync);
+    return () => {
+      window.removeEventListener('bumpify:profile-updated', sync);
+      window.removeEventListener('bumpify:prefs-updated', sync);
+    };
   }, []);
 
-  if (status !== 'authenticated' || !session?.user) return null;
+  if (status !== 'authenticated' || !session?.user || !visible) return null;
 
   const name = custom.displayName || session.user.name;
   const status_ = custom.status || 'Voir mon profil';

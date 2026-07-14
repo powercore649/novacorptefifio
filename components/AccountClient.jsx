@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSession, signIn } from 'next-auth/react';
 import LoadingLogo from '@/components/LoadingLogo';
-import { formatNumber, profileCustom, PROFILE_BANNER_COLORS, prefs } from '@/lib/utils';
+import { formatNumber, profileCustom, PROFILE_BANNER_COLORS, prefs, favorites, searchHistory, savedSearches, collections, viewPref } from '@/lib/utils';
 
 const DISCORD_GUILDS_PREVIEW_COUNT = 12;
 
@@ -18,16 +18,42 @@ export default function AccountClient() {
   const [idCopied, setIdCopied] = useState(false);
   const [customProfile, setCustomProfile] = useState({});
   const [form, setForm] = useState({ displayName: '', status: '', bio: '', pronouns: '', bannerColor: '' });
-  const [sitePrefs, setSitePrefs] = useState({ reduceMotion: false, defaultHideNsfw: true });
+  const [sitePrefs, setSitePrefs] = useState({ reduceMotion: false, defaultHideNsfw: true, defaultSort: 'bumps', showProfileBar: true });
+  const [defaultView, setDefaultView] = useState('grid');
 
   useEffect(() => {
     setSitePrefs(prefs.get());
+    setDefaultView(viewPref.get());
   }, []);
 
   const togglePref = (key) => {
     const next = prefs.set({ [key]: !sitePrefs[key] });
     setSitePrefs(next);
     window.dispatchEvent(new Event('bumpify:prefs-updated'));
+  };
+
+  const setPrefValue = (key, value) => {
+    const next = prefs.set({ [key]: value });
+    setSitePrefs(next);
+    window.dispatchEvent(new Event('bumpify:prefs-updated'));
+  };
+
+  const changeDefaultView = (v) => {
+    viewPref.set(v);
+    setDefaultView(v);
+  };
+
+  const [clearedMsg, setClearedMsg] = useState('');
+  const clearLocalData = (which) => {
+    if (which === 'favoris') favorites.clear();
+    if (which === 'historique') searchHistory.clear();
+    if (which === 'recherches') savedSearches.clearAll();
+    if (which === 'collections') collections.clearAll();
+    if (which === 'tout') {
+      favorites.clear(); searchHistory.clear(); savedSearches.clearAll(); collections.clearAll();
+    }
+    setClearedMsg('✅ Effacé');
+    setTimeout(() => setClearedMsg(''), 2000);
   };
 
   useEffect(() => {
@@ -234,6 +260,9 @@ export default function AccountClient() {
             🎨 Personnaliser mon profil
           </button>
           <div className="account-sidebar-label">Données</div>
+          <button className={`account-sidebar-item ${section === 'donnees' ? 'active' : ''}`} onClick={() => setSection('donnees')}>
+            🗑️ Données locales
+          </button>
           <button className="account-sidebar-item" onClick={exportData} disabled={!account}>
             ⬇️ Exporter mes données
           </button>
@@ -472,6 +501,58 @@ export default function AccountClient() {
                 )}
               </div>
             )}
+            {section === 'donnees' && (
+              <div>
+                <div className="empty-state" style={{ textAlign: 'left', marginBottom: 20, padding: '14px 18px' }}>
+                  ℹ️ Favoris, historique de recherche, recherches sauvegardées et collections sont stockés
+                  uniquement dans ce navigateur. Tu peux les effacer ici à tout moment.
+                </div>
+
+                <div className="account-info-row">
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Favoris</div>
+                    <div className="account-info-row-value">{favorites.get().length} serveur{favorites.get().length !== 1 ? 's' : ''}</div>
+                  </div>
+                  <button className="filter-chip" onClick={() => clearLocalData('favoris')}>Effacer</button>
+                </div>
+
+                <div className="account-info-row">
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Historique de recherche</div>
+                    <div className="account-info-row-value">{searchHistory.get().length} entrée{searchHistory.get().length !== 1 ? 's' : ''}</div>
+                  </div>
+                  <button className="filter-chip" onClick={() => clearLocalData('historique')}>Effacer</button>
+                </div>
+
+                <div className="account-info-row">
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Recherches avancées sauvegardées</div>
+                    <div className="account-info-row-value">{savedSearches.getAll().length} recherche{savedSearches.getAll().length !== 1 ? 's' : ''}</div>
+                  </div>
+                  <button className="filter-chip" onClick={() => clearLocalData('recherches')}>Effacer</button>
+                </div>
+
+                <div className="account-info-row">
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Collections</div>
+                    <div className="account-info-row-value">{collections.getAll().length} collection{collections.getAll().length !== 1 ? 's' : ''}</div>
+                  </div>
+                  <button className="filter-chip" onClick={() => clearLocalData('collections')}>Effacer</button>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 20 }}>
+                  <button
+                    className="filter-chip"
+                    style={{ borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                    onClick={() => clearLocalData('tout')}
+                  >
+                    🗑️ Tout effacer
+                  </button>
+                  {clearedMsg && <span style={{ fontSize: 13, color: 'var(--success)' }}>{clearedMsg}</span>}
+                </div>
+              </div>
+            )}
+
             {section === 'personnaliser' && (
               <div>
                 <div className="empty-state" style={{ textAlign: 'left', marginBottom: 20, padding: '14px 18px' }}>
@@ -583,6 +664,53 @@ export default function AccountClient() {
                   </div>
                   <span className={`filter-chip ${sitePrefs.defaultHideNsfw ? 'active' : ''}`}>
                     {sitePrefs.defaultHideNsfw ? 'Activé' : 'Désactivé'}
+                  </span>
+                </div>
+
+                <div className="account-info-row">
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Tri par défaut de l'annuaire</div>
+                    <div className="account-info-row-value" style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
+                      Appliqué à chaque ouverture de l'annuaire
+                    </div>
+                  </div>
+                  <select
+                    className="filter-select"
+                    value={sitePrefs.defaultSort}
+                    onChange={(e) => setPrefValue('defaultSort', e.target.value)}
+                  >
+                    <option value="bumps">Plus bumpés</option>
+                    <option value="members">Plus de membres</option>
+                    <option value="recent">Plus récents</option>
+                  </select>
+                </div>
+
+                <div className="account-info-row">
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Vue par défaut de l'annuaire</div>
+                    <div className="account-info-row-value" style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
+                      Grille de cartes ou liste compacte
+                    </div>
+                  </div>
+                  <select
+                    className="filter-select"
+                    value={defaultView}
+                    onChange={(e) => changeDefaultView(e.target.value)}
+                  >
+                    <option value="grid">Grille</option>
+                    <option value="list">Liste</option>
+                  </select>
+                </div>
+
+                <div className="account-info-row" style={{ cursor: 'pointer' }} onClick={() => togglePref('showProfileBar')}>
+                  <div style={{ flex: 1 }}>
+                    <div className="account-info-row-label">Afficher la barre de profil</div>
+                    <div className="account-info-row-value" style={{ fontSize: 12.5, color: 'var(--text-faint)' }}>
+                      La pastille avec ton avatar en bas à gauche du site
+                    </div>
+                  </div>
+                  <span className={`filter-chip ${sitePrefs.showProfileBar ? 'active' : ''}`}>
+                    {sitePrefs.showProfileBar ? 'Activé' : 'Désactivé'}
                   </span>
                 </div>
 

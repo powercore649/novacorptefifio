@@ -64,6 +64,7 @@ export default function DirectoryClient({ initialServers = null, hideBanner = fa
     setCompareIds(compareList.get());
     setView(viewPref.get());
     setHideNsfw(prefs.get().defaultHideNsfw);
+    setSort(prefs.get().defaultSort);
   }, []);
 
   const toggleFavorite = (e, guildId) => {
