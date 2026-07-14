@@ -4,6 +4,7 @@ import SiteCustomizer from '@/components/SiteCustomizer';
 import AuthProvider from '@/components/AuthProvider';
 import OnboardingTour from '@/components/OnboardingTour';
 import PrefsApplier from '@/components/PrefsApplier';
+import ProfileBar from '@/components/ProfileBar';
 
 const display = Space_Grotesk({ subsets: ['latin'], variable: '--font-display', weight: ['500', '600', '700'] });
 const body = Inter({ subsets: ['latin'], variable: '--font-body', weight: ['400', '500', '600'] });
@@ -44,6 +45,7 @@ export default function RootLayout({ children }) {
           <SiteCustomizer />
           <OnboardingTour />
           <PrefsApplier />
+          <ProfileBar />
         </AuthProvider>
       </body>
     </html>
